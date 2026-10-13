@@ -1,0 +1,11 @@
+/* Page-specific styles: incident review and detail workspace. */
+.incidents-page .split-panel {
+  align-items: start;
+}
+.incidents-page [data-select-event]:focus {
+  outline: 2px solid #82c7a6;
+  outline-offset: -2px;
+}
+.incidents-page .detail-actions .btn {
+  width: 100%;
+}

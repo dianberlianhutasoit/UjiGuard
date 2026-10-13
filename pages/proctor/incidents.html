@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Perlu Diperiksa | UjiGuard</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css" />
+    <link rel="stylesheet" href="proctor.css" />
+    <link rel="stylesheet" href="incidents.css" />
+  </head>
+  <body class="incidents-page">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="dashboard.html"
+          ><span class="brand-mark"
+            ><svg viewBox="0 0 32 32" fill="none">
+              <path
+                d="M16 3.8 26 7.5v7.1c0 7.2-4.7 11.6-10 13.8C10.7 26.2 6 21.8 6 14.6V7.5L16 3.8Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="m11.5 15.7 3 3.1 6.2-7"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+              /></svg></span
+          ><span
+            ><strong>UjiGuard</strong><small>EXAM INTEGRITY DESK</small></span
+          ></a
+        >
+        <div class="side-label">WORKSPACE</div>
+        <nav class="side-nav">
+          <a href="dashboard.html" data-nav="dashboard"
+            ><span class="navico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard
+            <span class="nav-active"></span></a
+          ><a href="incidents.html" data-nav="incidents"
+            ><span class="navico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4m0 1h13l-2 4 2 4H5"/></svg></span> Perlu Diperiksa
+            <span class="nav-count" id="side-new-count">0</span></a
+          ><a href="sessions.html" data-nav="sessions"
+            ><span class="navico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span> Status Station</a
+          >
+          <a href="camera-monitor.html" data-nav="camera-monitor"><span class="navico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 3v18M16 3v18M3 9h5m0 6h5m3-6h5m-5 6h5"/></svg></span> Monitor Ruangan</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="integrity-note">
+            <span class="note-spark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v5m0 10v5M2 12h5m10 0h5m-3-7-3 3m-8 8-3 3m14 0-3-3M7 7 4 4"/></svg></span><strong>Keputusan oleh Pengawas</strong>
+            <p>
+              Indikasi membantu pengawas menentukan meja yang perlu ditinjau. Keputusan akhir tetap dilakukan pengawas.
+            </p>
+          </div>
+          <div class="profile-mini">
+            <div class="avatar">PG</div>
+            <div class="profile-copy">
+              <strong data-user-name>Pengawas Demo</strong
+              ><small data-user-email>pengawas@ujiguard.demo</small>
+            </div>
+            <button class="logout-icon" data-logout title="Keluar" aria-label="Keluar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H5v14h5m4-3 4-4-4-4m4 4H9"/></svg></button>
+          </div>
+        </div>
+      </aside>
+      <main class="main-area">
+        <header class="topbar">
+          <button class="mobile-menu" id="mobile-menu" aria-label="Buka menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <div class="crumb">
+            UjiGuard <span style="color: #bdc9c6">/</span>
+            <b>Perlu Diperiksa</b>
+          </div>
+          <div class="topbar-right">
+            <span class="demo-pill" data-demo-badge>MODE DEMO</span
+            ><span class="muted topbar-room"
+              >Simulasi UTBK-SNBT 2026 &middot; Lab CBT A &middot; Sesi 01</span
+            >
+            <div class="avatar-top">AP</div>
+          </div>
+        </header>
+        <div class="content">
+          <section class="page-head">
+            <div>
+              <div class="eyebrow">PEMERIKSAAN / 02</div>
+              <h1 class="h1">Perlu Diperiksa</h1>
+              <p class="page-subtitle">
+                Periksa konteks setiap sinyal, ubah status, dan catat tindak
+                lanjut. Tidak ada keputusan otomatis atas peserta.
+              </p>
+            </div>
+            <div class="page-head-actions">
+              <button class="btn btn-light" id="export-csv"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5"/><path d="M5 19h14"/></svg> Ekspor CSV</button>
+            </div>
+          </section>
+          <div class="notice-band">
+            <b>Pengingat pemeriksaan:</b> indikasi dapat muncul karena kondisi
+            kamera, jaringan, lingkungan, atau perilaku wajar. Tinjau konteks
+            lebih dulu sebelum meminta pemeriksaan langsung.
+          </div>
+          <section class="split-panel">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <h2 class="section-title">Riwayat Pemeriksaan</h2>
+                  <p class="section-kicker" id="incident-count">
+                    Memuat insiden...
+                  </p>
+                </div>
+              </div>
+              <div class="card-body" style="padding-bottom: 10px">
+                <div class="toolbar">
+                  <input
+                    class="search-control"
+                    id="search-incidents"
+                    type="search"
+                    placeholder="Cari nama, meja, atau ID…"
+                    aria-label="Cari insiden"
+                  /><select
+                    class="select-control"
+                    id="filter-priority"
+                    aria-label="Filter tingkat perhatian"
+                  >
+                    <option value="all">Semua tingkat</option>
+                    <option value="high">Tinggi</option>
+                    <option value="medium">Sedang</option>
+                    <option value="low">Rendah</option></select
+                  ><select
+                    class="select-control"
+                    id="filter-status"
+                    aria-label="Filter status"
+                  >
+                    <option value="all">Semua status</option>
+                    <option value="new">Perlu Ditinjau</option>
+                    <option value="review">Sedang Dipantau</option>
+                    <option value="resolved">Selesai</option>
+                    <option value="onsite">Dalam Pemeriksaan</option></select
+                  ><select
+                    class="select-control"
+                    id="filter-type"
+                    aria-label="Filter sumber"
+                  >
+                    <option value="all">Semua indikator</option>
+                    <option value="visual">Visual</option>
+                    
+                    
+                    <option value="device">Perangkat</option>
+                  </select>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Waktu</th>
+                      <th>Peserta / Meja</th>
+                      <th>Indikasi</th>
+                      <th>Tingkat Perhatian</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="incidents-table"></tbody>
+                </table>
+              </div>
+              <div id="incidents-empty" class="empty-state hide">
+                <div class="empty-search-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+                <strong>Tidak ada insiden yang cocok</strong>Ubah filter atau
+                kata kunci pencarian.
+              </div>
+            </div>
+            <aside class="card detail-panel" id="detail-panel">
+              <div class="detail-placeholder">
+                <div class="detail-symbol" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+                <strong>Pilih sebuah insiden</strong>
+                <p>
+                  Pilih baris di sebelah kiri untuk melihat keterangan dan opsi
+                  tindak lanjut.
+                </p>
+              </div>
+            </aside>
+          </section>
+        </div>
+        <footer class="page-footer"><span>UjiGuard &middot; Sistem Pendukung Pengawasan Ujian</span></footer>
+      </main>
+    </div>
+    <script src="../../assets/js/store.js"></script>
+    <script src="../../assets/js/nav.js"></script>
+    <script src="incidents.js"></script>
+    <script src="proctor.js"></script>
+  </body>
+</html>
+
+
+
+
