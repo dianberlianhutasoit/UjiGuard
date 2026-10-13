@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#102b34" />
+    <title>Monitor Kamera | UjiGuard</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css" />
+    <link rel="stylesheet" href="proctor.css" />
+    <link rel="stylesheet" href="camera-monitor.css" />
+  </head>
+  <body class="camera-monitor-page">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="dashboard.html">
+          <span class="brand-mark"
+            ><svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path
+                d="M16 3.8 26 7.5v7.1c0 7.2-4.7 11.6-10 13.8C10.7 26.2 6 21.8 6 14.6V7.5L16 3.8Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="m11.5 15.7 3 3.1 6.2-7"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+              /></svg
+          ></span>
+          <span
+            ><strong>UjiGuard</strong><small>EXAM INTEGRITY DESK</small></span
+          >
+        </a>
+        <div class="side-label">WORKSPACE</div>
+        <nav class="side-nav" aria-label="Menu pengawas">
+          <a href="dashboard.html" data-nav="dashboard"
+            ><span class="navico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard
+            <span class="nav-active"></span
+          ></a>
+          <a href="incidents.html" data-nav="incidents"
+            ><span class="navico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4m0 1h13l-2 4 2 4H5"/></svg></span> Perlu Diperiksa
+            <span class="nav-count" id="side-new-count">0</span></a
+          >
+          <a href="sessions.html" data-nav="sessions"
+            ><span class="navico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span> Status Station</a
+          >
+          <a href="camera-monitor.html" data-nav="camera-monitor"
+            ><span class="navico" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 3v18M16 3v18M3 9h5m0 6h5m3-6h5m-5 6h5"/></svg></span> Monitor Ruangan</a
+          >
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="integrity-note">
+            <span class="note-spark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v5m0 10v5M2 12h5m10 0h5m-3-7-3 3m-8 8-3 3m14 0-3-3M7 7 4 4"/></svg></span><strong>Keputusan oleh Pengawas</strong>
+            <p>
+              Indikasi membantu pengawas menentukan meja yang perlu ditinjau. Keputusan akhir tetap dilakukan pengawas.
+            </p>
+          </div>
+          <div class="profile-mini">
+            <div class="avatar">PG</div>
+            <div class="profile-copy">
+              <strong data-user-name>Pengawas Demo</strong
+              ><small data-user-email>pengawas@ujiguard.demo</small>
+            </div>
+            <button class="logout-icon" data-logout title="Keluar" aria-label="Keluar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H5v14h5m4-3 4-4-4-4m4 4H9"/></svg></button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <button class="mobile-menu" id="mobile-menu" aria-label="Buka menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <div class="crumb">
+            UjiGuard <span style="color: #bdc9c6">/</span> <b>Monitor Ruangan</b>
+          </div>
+          <div class="topbar-right">
+            <span class="demo-pill" data-demo-badge>MODE DEMO</span
+            ><span class="muted topbar-room">Simulasi UTBK-SNBT 2026 &middot; Lab CBT A &middot; Sesi 01</span>
+            <div class="avatar-top">AP</div>
+          </div>
+        </header>
+
+        <div class="content">
+          <section class="page-head camera-page-head">
+            <div>
+              <div class="eyebrow">SIMULASI UTBK-SNBT 2026 / LAB CBT A</div>
+              <h1 class="h1">Monitor Ruangan</h1>
+              <p class="page-subtitle">Pengawasan Sesi UTBK - Sesi 01</p>
+            </div>
+            <div class="page-head-actions">
+              <span class="tag tag-gray" id="monitoring-session-status">Persiapan Sesi</span><button class="btn btn-light" id="open-station-demo">Buka Station Demo</button><button class="btn btn-primary" id="start-monitoring">Mulai Monitoring</button><button class="btn btn-light" id="refresh-camera"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9a7 7 0 0 1 11.7-2L20 12M4 12l2.8 5a7 7 0 0 0 11.7-2"/></svg> Segarkan status</button>
+            </div>
+          </section>
+
+          <div class="camera-demo-notice">
+            <span class="notice-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-9h.01"/></svg></span>
+            <div>
+              <strong
+                >Monitoring kamera berjalan di station ujian. Halaman ini hanya menampilkan status dan indikasi agar pengawas dapat fokus pada meja yang perlu diperiksa.</strong
+              >
+              <p>Mode Demo &middot; Simulasi UTBK-SNBT 2026 &middot; Lab CBT A &middot; Sesi 01</p>
+            </div>
+          </div>
+
+          <section class="camera-metrics" aria-label="Ringkasan status kamera">
+            <article class="card camera-metric">
+              <div class="camera-metric-label">
+                Status sesi <span class="metric-icon ready" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span>
+              </div>
+              <div class="camera-metric-value" id="cam-metric-ready">Persiapan</div>
+              <div class="camera-metric-foot" id="cam-metric-session-foot">
+                Siapkan sesi sebelum memulai
+              </div>
+            </article>
+            <article class="card camera-metric">
+              <div class="camera-metric-label">
+                Station terhubung <span class="metric-icon review" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span>
+              </div>
+              <div class="camera-metric-value" id="cam-metric-review">0/6</div>
+              <div class="camera-metric-foot">
+                Pada prototype, satu station dapat menggunakan kamera nyata dan station lainnya menggunakan data simulasi.
+              </div>
+            </article>
+            <article class="card camera-metric">
+              <div class="camera-metric-label">
+                Station perlu ditinjau <span class="metric-icon offline" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span>
+              </div>
+              <div class="camera-metric-value" id="cam-metric-offline">0</div>
+              <div class="camera-metric-foot">
+                Sinyal menunggu tinjauan pengawas
+              </div>
+            </article>
+            <article class="card camera-metric">
+              <div class="camera-metric-label">
+                Station simulasi <span class="metric-icon total" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span>
+              </div>
+              <div class="camera-metric-value" id="cam-metric-total">0</div>
+              <div class="camera-metric-foot">
+                Lima station tanpa kamera nyata
+              </div>
+            </article>
+          </section>
+
+          <section class="card operation-guide" aria-label="Cara Kerja UjiGuard"><div><strong>Cara Kerja UjiGuard</strong><small>Persiapan &#8594; Station Aktif &#8594; Monitoring &#8594; Tinjau Indikasi &#8594; Selesai</small></div><div class="operation-meta"><span>Simulasi UTBK-SNBT 2026</span><span>Lab CBT A</span><span>Sesi 01</span><span>6 station</span></div></section>
+          <section class="card readiness-card"><div class="readiness-copy"><strong>Checklist kesiapan station</strong><span id="readiness-summary">Siapkan station dan kamera sebelum memulai monitoring.</span></div><div class="readiness-list" id="readiness-list"></div></section>
+          <div class="scenario-actions"><span>Mode Demo</span><button class="btn btn-light btn-sm" id="run-demo-scenario">Jalankan Skenario Indikasi</button><button class="btn btn-light btn-sm" id="reset-demo">Reset Skenario Demo</button></div>
+
+          <section class="room-workspace" aria-label="Station dan detail station">
+            <article class="card camera-directory">
+              <div class="card-head camera-directory-head">
+                <div>
+                  <h2 class="section-title">Peta meja</h2>
+                  <p class="section-kicker" id="camera-result-count">6 station</p>
+                </div>
+                <label class="station-search"><span class="sr-only">Cari nomor meja atau peserta</span><input id="search-stations" type="search" placeholder="Cari meja atau peserta" autocomplete="off"></label>
+              </div>
+              <div class="camera-grid-wrap">
+                <div class="camera-grid" id="camera-grid"></div>
+                <div class="empty-state hide" id="camera-empty">
+                  <strong>Tidak ada station yang cocok</strong>Ubah kata kunci pencarian.
+                </div>
+              </div>
+            </article>
+
+            <article class="card camera-detail-card" id="camera-detail-panel">
+              <div class="camera-detail-empty">
+                <div class="camera-detail-empty-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+                <strong>Pilih salah satu meja</strong>
+                <p>
+                  Lihat nomor peserta, status station, status kamera, dan tindak lanjut pengawas.
+                </p>
+              </div>
+            </article>
+          </section>
+
+          <section class="camera-lower-grid">
+            <article class="card camera-guidance-card">
+              <div class="card-head">
+                <div>
+                  <h2 class="section-title">Tindak lanjut indikasi</h2>
+                  <p class="section-kicker">
+                    Keputusan akhir selalu pada pengawas
+                  </p>
+                </div>
+              </div>
+              <div class="camera-guidance-list">
+                <div class="guidance-step">
+                  <span>01</span>
+                  <div>
+                    <strong>Tinjau alasan dan waktu</strong>
+                    <p>
+                      Buka detail meja untuk membaca indikator terakhir dan timestamp.
+                    </p>
+                  </div>
+                </div>
+                <div class="guidance-step">
+                  <span>02</span>
+                  <div>
+                    <strong>Pilih tindakan pengawas</strong>
+                    <p>
+                      Lanjut pantau jika indikasi belum memerlukan pemeriksaan langsung. Keputusan akhir muncul setelah pemeriksaan.
+                    </p>
+                  </div>
+                </div>
+                <div class="guidance-step">
+                  <span>03</span>
+                  <div>
+                    <strong>Simpan hasil pemeriksaan</strong>
+                    <p>
+                      Catat pelanggaran hanya jika hasil pemeriksaan langsung mendukungnya.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </section>
+        </div>
+        <footer class="page-footer"><span>UjiGuard &middot; Sistem Pendukung Pengawasan Ujian</span></footer>
+      </main>
+    </div>
+
+    <script src="../../assets/js/store.js"></script>
+    <script src="../../assets/js/nav.js"></script>
+    <script src="camera-monitor.js"></script>
+    <script src="proctor.js"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
