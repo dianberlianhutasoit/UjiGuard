@@ -31,7 +31,7 @@
     document.getElementById("dashboard-cta").textContent = data.monitoring.active ? "Buka Monitor Ruangan" : "Siapkan Sesi";
     document.getElementById("dashboard-cta").href = "camera-monitor.html";
     document.getElementById("metric-total").textContent = stations.length;
-    document.getElementById("metric-demo-connected").textContent = `${connected}/${stations.filter((s) => s.stationType === "real-demo").length}`;
+    document.getElementById("metric-demo-connected").textContent = `${connected}/${stations.length}`;
     document.getElementById("metric-simulation").textContent = simulation;
     document.getElementById("metric-new").textContent = review;
     document.getElementById("side-new-count").textContent = data.events.filter((e) => e.status === "new").length;
@@ -82,7 +82,7 @@
     const query = (document.getElementById("search-stations").value || "").toLowerCase();
     const rows = data.sessions.filter((s) => [s.desk, s.name, s.participantNo, s.id].join(" ").toLowerCase().includes(query));
     document.getElementById("station-total").textContent = data.sessions.length;
-    document.getElementById("station-connected").textContent = `${data.sessions.filter((s) => UjiStore.cameraConnected(s)).length}/${data.sessions.filter((s) => s.stationType === "real-demo").length}`;
+    document.getElementById("station-connected").textContent = `${data.sessions.filter((s) => UjiStore.cameraConnected(s)).length}/${data.sessions.length}`;
     document.getElementById("station-simulation").textContent = data.sessions.filter((s) => s.stationType === "simulation").length;
     document.getElementById("station-review").textContent = data.sessions.filter((s) => s.attentionStatus === "Perlu Ditinjau").length;
     document.getElementById("stations-empty").classList.toggle("hide", rows.length > 0);
