@@ -1,0 +1,7 @@
+/* Page-specific styles: participant/session directory. */
+.sessions-page .data-table td {
+  vertical-align: middle;
+}
+.sessions-page .person-cell {
+  min-width: 180px;
+}
