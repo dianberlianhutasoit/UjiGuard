@@ -23,6 +23,7 @@
   let sessionStarted = false;
   let sessionEnded = false;
   let countdownTimer = null;
+  const deviceFailureReported = new Set();
 
   const statusIds = { camera: "camera-status", microphone: "microphone-status", connection: "connection-status" };
   const setStatus = (kind, value) => {
@@ -31,7 +32,7 @@
     node.classList.toggle("is-active", value === "Aktif" || value === "Jaringan Tersedia");
     node.classList.toggle("is-error", value === "Bermasalah" || value === "Tidak Ada Jaringan");
   };
-  const isLive = (stream, kind) => !!stream?.getTracks().some((track) => track.kind === kind && track.readyState === "live");
+  const isLive = (stream, kind) => !!stream?.getTracks().some((track) => track.kind === kind && track.readyState === "live" && !track.muted);
   const isScheduleCompleted = () => UjiAdminStore.get().examSessions.some((item) => item.id === demo.sessionId && item.examId === demo.examId && item.status === "Selesai");
   const canEnterSession = () => !abandonedSession && !isScheduleCompleted() && Date.now() >= bounds.startAt && Date.now() < bounds.endAt;
   const updateEnterButton = () => {
@@ -88,11 +89,47 @@
       activeRecord[key] = "Bermasalah";
       activeRecord.monitoringStatus = "Perangkat Bermasalah";
       UjiStore.updateParticipantSession(user.id, { [key]: "Bermasalah", monitoringStatus: "Perangkat Bermasalah" });
+      if (!deviceFailureReported.has(kind)) {
+        deviceFailureReported.add(kind);
+        const station = UjiStore.get().sessions.find((item) => item.participantNo === demo.participantNo || item.name === demo.name);
+        UjiStore.addEvent({
+          participantId: demo.id,
+          examSessionId: demo.sessionId,
+          sessionId: station?.id || demo.id,
+          student: demo.name,
+          participantNo: demo.participantNo || station?.participantNo || "",
+          desk: station?.desk || "A-01",
+          type: "device",
+          title: `${label} peserta tidak aktif`,
+          detail: `Track ${label.toLowerCase()} peserta terputus saat monitoring aktif.`,
+          source: `Perangkat / ${label}`,
+          status: "new",
+          priority: "high",
+        });
+      }
       const target = kind === "video" ? "active-camera-status" : "active-microphone-status";
       $(target).textContent = "Bermasalah";
       $(target).classList.add("is-error");
       $("active-monitoring-status").textContent = "Perangkat Bermasalah";
     }
+  };
+  const restoreTrack = (kind) => {
+    if (!sessionStarted || !activeRecord || sessionEnded || !deviceFailureReported.has(kind)) return;
+    const stream = kind === "video" ? cameraStream : microphoneStream;
+    const trackKind = kind === "video" ? "video" : "audio";
+    if (!isLive(stream, trackKind)) return;
+    deviceFailureReported.delete(kind);
+    const key = kind === "video" ? "cameraStatus" : "microphoneStatus";
+    const target = kind === "video" ? "active-camera-status" : "active-microphone-status";
+    activeRecord[key] = "Aktif";
+    $(target).textContent = "Aktif";
+    $(target).classList.remove("is-error");
+    const devicesOkay = isLive(cameraStream, "video") && isLive(microphoneStream, "audio");
+    if (devicesOkay) {
+      activeRecord.monitoringStatus = navigator.onLine ? "Monitoring Aktif" : "Jaringan Bermasalah";
+      UjiStore.updateParticipantSession(user.id, { [key]: "Aktif", monitoringStatus: activeRecord.monitoringStatus });
+      $("active-monitoring-status").textContent = activeRecord.monitoringStatus;
+    } else UjiStore.updateParticipantSession(user.id, { [key]: "Aktif" });
   };
   const formatCountdown = (target) => {
     const seconds = Math.floor(Math.max(0, target - Date.now()) / 1000);
@@ -175,14 +212,24 @@
       $("camera-preview").srcObject = cameraStream;
       $("preview-empty").classList.add("hide");
       setStatus("camera", "Aktif");
-      cameraStream.getVideoTracks().forEach((track) => track.addEventListener("ended", () => showTrackProblem("video"), { once: true }));
+      deviceFailureReported.delete("video");
+      cameraStream.getVideoTracks().forEach((track) => {
+        track.addEventListener("ended", () => showTrackProblem("video"), { once: true });
+        track.addEventListener("mute", () => showTrackProblem("video"));
+        track.addEventListener("unmute", () => restoreTrack("video"));
+      });
     } catch (_) { setStatus("camera", "Bermasalah"); }
     try {
       microphoneStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
       $("active-microphone-source").srcObject = microphoneStream;
       $("active-microphone-source").play().catch(() => {});
       setStatus("microphone", "Aktif");
-      microphoneStream.getAudioTracks().forEach((track) => track.addEventListener("ended", () => showTrackProblem("audio"), { once: true }));
+      deviceFailureReported.delete("audio");
+      microphoneStream.getAudioTracks().forEach((track) => {
+        track.addEventListener("ended", () => showTrackProblem("audio"), { once: true });
+        track.addEventListener("mute", () => showTrackProblem("audio"));
+        track.addEventListener("unmute", () => restoreTrack("audio"));
+      });
     } catch (_) { setStatus("microphone", "Bermasalah"); }
     updateConnectionStatus();
     if (!isLive(cameraStream, "video") || !isLive(microphoneStream, "audio")) {
@@ -197,6 +244,7 @@
   $("enter-exam").addEventListener("click", () => {
     if (abandonedSession || isScheduleCompleted() || !isLive(cameraStream, "video") || !isLive(microphoneStream, "audio") || !canEnterSession()) return;
     const joinedAt = new Date().toISOString();
+    deviceFailureReported.clear();
     activeRecord = {
       participantId: demo.id, name: demo.name, examId: demo.examId, sessionId: demo.sessionId,
       cameraStatus: "Aktif", microphoneStatus: "Aktif", monitoringStatus: "Monitoring Aktif",

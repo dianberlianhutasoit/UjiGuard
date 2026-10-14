@@ -221,6 +221,10 @@
     const overview = renderOverview(session);
     const rows = participantRows();
     selectedParticipantId ||= rows[0]?.participant.id || null;
+    const reviewRows = rows.filter((row) => row.attention === "Perlu Ditinjau");
+    if (activeView === "review" && !reviewRows.some((row) => row.participant.id === selectedParticipantId)) {
+      selectedParticipantId = reviewRows[0]?.participant.id || null;
+    }
     const selected = rows.find((row) => row.participant.id === selectedParticipantId) || null;
     if (activeView === "history") { $("proctor-view").innerHTML = `${overview}${renderHistory()}`; return; }
     if (activeView === "dashboard") {
