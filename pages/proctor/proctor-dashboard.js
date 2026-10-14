@@ -79,6 +79,32 @@
   function attentionClass(status) {
     return status === "Ada Indikasi" ? "review" : "";
   }
+  function cameraPreview(participant, activeEvents, isLive, canVideo) {
+    if (!participant.demoData) return `<video id="detail-video" autoplay playsinline class="${isLive ? "" : "hide"}"></video>${isLive ? `<span class="video-label">LIVE</span>` : `<div class="video-placeholder" id="camera-message"><svg viewBox="0 0 48 40" aria-hidden="true"><path d="M5 9h24a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V13a4 4 0 0 1 4-4Zm28 8 13-7v20l-13-7V17Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg><strong>${canVideo ? "Menghubungkan kamera peserta" : "Menunggu kamera peserta"}</strong><small>${canVideo ? "Stream Station Demo A-01 sedang disiapkan." : "Stream nyata tersedia saat Station Demo A-01 terhubung."}</small></div>`}`;
+
+    const activeText = activeEvents.map((event) => `${event.title || ""} ${event.source || ""}`).join(" ").toLowerCase();
+    let scene = "normal";
+    let caption = "Normal · Data Simulasi";
+    if (activeEvents.length && participant.id === "PST-002") {
+      scene = "no-face";
+      caption = "Wajah tidak terdeteksi · Data Simulasi";
+    } else if (activeEvents.length && (participant.id === "PST-003" || /kamera.*tidak aktif|kamera.*bermasalah/.test(activeText))) {
+      scene = "camera-off";
+      caption = "Kamera tidak tersedia · Data Simulasi";
+    } else if (activeEvents.length && participant.id === "PST-004") {
+      scene = "out-of-frame";
+      caption = "Keluar frame · Data Simulasi";
+    } else scene = `normal-${participant.id.toLowerCase()}`;
+    const audioWarning = activeEvents.some((event) => event.type === "audio" || /mikrofon|audio/.test(`${event.title || ""} ${event.source || ""}`));
+    return `<div class="camera-preview simulation-preview scene-${scene}" role="img" aria-label="Pratinjau simulasi: ${esc(caption)}">
+      <div class="preview-topline"><span><i></i> DATA SIMULASI</span><span>PREVIEW</span></div>
+      <div class="preview-scene"><span class="preview-corner corner-tl"></span><span class="preview-corner corner-tr"></span><span class="preview-corner corner-bl"></span><span class="preview-corner corner-br"></span>
+        ${scene === "no-face" ? `<div class="preview-scan"><span></span><b>Wajah tidak terdeteksi</b></div>` : scene === "camera-off" ? `<div class="preview-off"><span><svg viewBox="0 0 48 40" aria-hidden="true"><path d="M5 9h24a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V13a4 4 0 0 1 4-4Zm28 8 13-7v20l-13-7V17Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="m8 5 32 30" stroke="currentColor" stroke-width="3"/></svg></span><b>Kamera tidak aktif</b></div>` : `<div class="preview-person"><span class="person-hair"></span><span class="person-head"><i></i><i></i><em></em></span><span class="person-neck"></span><span class="person-body"></span></div>`}
+        ${audioWarning ? `<span class="preview-mic-warning">◖ Mic perlu diperiksa</span>` : ""}
+      </div>
+      <div class="preview-caption"><span>${esc(participant.name)}</span><small>${esc(caption)}</small></div>
+    </div>`;
+  }
   function statusSummary(session) {
     const rows = (session?.participants || []).map((participant) => ({ participant, runtime: runtimeFor(participant), attention: attentionFor(participant) }));
     return {
@@ -158,7 +184,7 @@
       <section class="detail-section"><h3>Indikator aktif <small>${activeEvents.length ? `${activeEvents.length} aktif` : ""}</small></h3>${activeIndicatorMarkup || `<div class="empty-state">Tidak ada indikasi aktif.</div>`}</section>
       <section class="detail-section"><h3>Indikator terakhir <small>${recent > 1 ? `${recent} indikator dalam 5 menit` : ""}</small></h3>${latest ? `<div class="indicator-item"><div><strong>${esc(latest.title)}</strong><small>${esc(latest.source || latest.label || latest.type)}${latest.isSimulation ? " · Data Simulasi" : " · Event nyata"}</small><small>${esc(latest.detail || "")}</small></div><time>${fullTime(latest.time)}</time></div>` : `<div class="empty-state">Belum ada indikator.</div>`}</section>
       <section class="detail-section"><h3>Riwayat indikator</h3>${timeline || `<div class="empty-state">Riwayat indikator kosong.</div>`}</section>
-      <section class="detail-section"><h3>Kamera peserta</h3><div class="video-frame"><video id="detail-video" autoplay playsinline class="${isLive ? "" : "hide"}"></video>${isLive ? `<span class="video-label">LIVE</span>` : `<div class="video-placeholder" id="camera-message">${participant.demoData ? "Data Simulasi - live camera tidak tersedia." : canVideo ? "Stream menunggu koneksi Station Demo A-01." : "Pratinjau hanya tersedia saat kamera Station Demo A-01 aktif. Tidak ada kamera pengawas yang digunakan."}</div>`}</div><div class="detail-actions">${cameraActions}</div></section>
+      <section class="detail-section"><h3>Kamera peserta</h3><div class="video-frame">${cameraPreview(participant, activeEvents, isLive, canVideo)}</div><div class="detail-actions">${cameraActions}</div></section>
       <section class="detail-section"><h3>Tindakan Pengawas</h3><div class="detail-actions">${attentionActions || `<small>Tidak ada indikasi aktif untuk diproses.</small>`}</div></section>`;
     if (isLive && video.srcObject) $("detail-video").srcObject = video.srcObject;
     const toggleCamera = $("toggle-camera");
