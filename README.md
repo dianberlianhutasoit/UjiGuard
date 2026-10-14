@@ -8,11 +8,11 @@ Jalankan server lokal dengan `npm start` bila Node.js tersedia, lalu buka `http:
 
 ## Akun demo
 
-| Role | ID | Email | Kata sandi |
-|---|---|---|---|
-| Peserta | `PST-001` | — | — |
-| Pengawas | `PGW-001` | `pengawas@ujiguard.demo` | `demo123` |
-| Admin | `ADM-001` | `admin@ujiguard.demo` | `demo123` |
+| Role     | ID        | Email                    | Kata sandi |
+| -------- | --------- | ------------------------ | ---------- |
+| Peserta  | `PST-001` | —                        | —          |
+| Pengawas | `PGW-001` | `pengawas@ujiguard.demo` | `demo123`  |
+| Admin    | `ADM-001` | `admin@ujiguard.demo`    | `demo123`  |
 
 ## Struktur data prototype
 
