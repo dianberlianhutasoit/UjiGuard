@@ -9,7 +9,11 @@
     ],
     participants: [
       { id: "PST-001", participantNo: "26-001", role: "participant", name: "Nadia Putri", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar" },
+      { id: "PST-002", participantNo: "26-002", role: "participant", name: "Rafi Pratama", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar", demoData: true },
       { id: "PST-003", participantNo: "26-003", role: "participant", name: "Dewi Anggraini", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar", demoData: true },
+      { id: "PST-004", participantNo: "26-004", role: "participant", name: "Bima Saputra", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar", demoData: true },
+      { id: "PST-005", participantNo: "26-005", role: "participant", name: "Salsa Maharani", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar", demoData: true },
+      { id: "PST-006", participantNo: "26-006", role: "participant", name: "Farhan Akbar", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar", demoData: true },
     ],
     exams: [
       { id: "EXAM-001", name: "Ujian Kompetensi Dasar", type: "Mandiri", description: "Ujian demo UjiGuard.", status: "Aktif" },
@@ -29,7 +33,7 @@
       if (saved && typeof saved === "object") {
         const state = {};
         COLLECTIONS.forEach((key) => { state[key] = Array.isArray(saved[key]) ? saved[key] : clone(seed[key]); });
-        // Add the dedicated demo participant to existing prototype data without replacing admin edits.
+        // Add demo participants to existing prototype data without replacing admin edits.
         for (const demoParticipant of seed.participants.filter((item) => item.demoData)) {
           if (!state.participants.some((item) => item.id === demoParticipant.id)) state.participants.push(clone(demoParticipant));
         }

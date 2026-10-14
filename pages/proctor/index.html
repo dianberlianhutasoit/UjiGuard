@@ -15,8 +15,8 @@
         <nav class="proctor-nav" aria-label="Menu pengawas">
           <button data-view="dashboard" class="is-active">Dashboard</button>
           <button data-view="monitor">Monitor Peserta</button>
-          <button data-view="review">Perlu Ditinjau <b id="nav-review-count">0</b></button>
-          <button data-view="history">Riwayat Pemeriksaan</button>
+          <button data-view="indications">Indikasi <b id="nav-review-count">0</b></button>
+          <button data-view="violations">Rekap Pelanggaran</button>
         </nav>
         <div class="proctor-account"><span class="admin-avatar">PG</span><span><strong id="proctor-name"></strong><small id="proctor-id"></small></span><button id="proctor-logout" type="button" aria-label="Keluar">Keluar</button></div>
       </aside>
@@ -28,6 +28,27 @@
         </div>
       </main>
     </div>
+    <dialog class="violation-dialog" id="violation-dialog" aria-labelledby="violation-dialog-title">
+      <form id="violation-form">
+        <div class="eyebrow">TINDAKAN PENGAWAS</div>
+        <h2 id="violation-dialog-title">Catat Pelanggaran</h2>
+        <label for="violation-type">Jenis pelanggaran</label>
+        <select id="violation-type" required>
+          <option value="">Pilih jenis pelanggaran</option>
+          <option>Perangkat tidak sesuai</option>
+          <option>Aktivitas mencurigakan</option>
+          <option>Komunikasi tidak diperbolehkan</option>
+          <option>Pelanggaran tata tertib</option>
+          <option>Lainnya</option>
+        </select>
+        <label for="violation-note">Catatan pengawas</label>
+        <textarea id="violation-note" rows="4" required placeholder="Tuliskan hasil verifikasi singkat"></textarea>
+        <div class="violation-dialog-actions">
+          <button class="btn btn-light" id="cancel-violation" type="button">Batal</button>
+          <button class="btn btn-primary" type="submit">Simpan Pelanggaran</button>
+        </div>
+      </form>
+    </dialog>
     <video id="proctor-video" autoplay playsinline></video>
     <script src="../../assets/js/admin-store.js"></script>
     <script src="../../assets/js/demo-users.js"></script>

@@ -1,7 +1,7 @@
 ﻿(function () {
   "use strict";
   const KEY = "ujiguard_demo_v2";
-  const SCHEMA = 5;
+  const SCHEMA = 6;
   const seed = [
     { id: "UG-2401", participantNo: "26-001", name: "Nadia Putri", email: "nadia@student.demo", desk: "A-01", stationType: "real-demo", status: "idle", started: Date.now(), device: "Kamera belum aktif" },
     { id: "UG-2402", participantNo: "26-002", name: "Rafi Pratama", email: "rafi@student.demo", desk: "A-02", stationType: "simulation", status: "active", started: Date.now(), device: "Data Simulasi" },
@@ -10,7 +10,15 @@
     { id: "UG-2405", participantNo: "26-005", name: "Salsa Maharani", email: "salsa@student.demo", desk: "A-05", stationType: "simulation", status: "idle", started: Date.now(), device: "Data Simulasi" },
     { id: "UG-2406", participantNo: "26-006", name: "Farhan Akbar", email: "farhan@student.demo", desk: "A-06", stationType: "simulation", status: "active", started: Date.now(), device: "Data Simulasi" },
   ];
-  function fresh() { return { schemaVersion: SCHEMA, sessions: seed.map((s) => ({ ...s })), events: [], reviewHistory: [], participantSessions: [], lastEvent: 1048, monitoring: { active: false, startedAt: null } }; }
+  function demoIndications() {
+    const now = Date.now();
+    return [
+      { id: "EV-DEMO-PST-002", time: now - 180000, sessionId: "UG-2402", examSessionId: "SESSION-01", participantId: "PST-002", student: "Rafi Pratama", participantNo: "26-002", desk: "A-02", type: "visual", title: "Wajah tidak terdeteksi selama 8 detik", detail: "Skenario simulasi untuk memeriksa alur verifikasi pengawas.", source: "Visual / Simulasi", label: "Data Simulasi", isSimulation: true, status: "new", priority: "high" },
+      { id: "EV-DEMO-PST-003", time: now - 120000, sessionId: "UG-2403", examSessionId: "SESSION-01", participantId: "PST-003", student: "Dewi Anggraini", participantNo: "26-003", desk: "A-03", type: "device", title: "Kamera peserta tidak aktif", detail: "Skenario simulasi gangguan kamera; bukan status kamera nyata.", source: "Perangkat / Kamera", label: "Data Simulasi", isSimulation: true, status: "new", priority: "high" },
+      { id: "EV-DEMO-PST-004", time: now - 60000, sessionId: "UG-2404", examSessionId: "SESSION-01", participantId: "PST-004", student: "Bima Saputra", participantNo: "26-004", desk: "A-04", type: "visual", title: "Wajah beberapa kali keluar frame", detail: "Skenario simulasi untuk memeriksa alur verifikasi pengawas.", source: "Visual / Simulasi", label: "Data Simulasi", isSimulation: true, status: "new", priority: "medium" },
+    ];
+  }
+  function fresh() { return { schemaVersion: SCHEMA, sessions: seed.map((s) => ({ ...s })), events: demoIndications(), reviewHistory: [], violations: [], participantSessions: [], lastEvent: 1048, monitoring: { active: false, startedAt: null } }; }
   function cameraConnected(s) { return s.stationType === "real-demo" && s.device === "Kamera lokal aktif" && Date.now() - (s.cameraHeartbeat || 0) < 10000; }
   function reconcile(x) {
     const old = Array.isArray(x.sessions) ? x.sessions : [];
@@ -23,7 +31,15 @@
     });
     x.events = Array.isArray(x.events) ? x.events : [];
     x.reviewHistory = Array.isArray(x.reviewHistory) ? x.reviewHistory : [];
+    x.violations = Array.isArray(x.violations) ? x.violations : [];
     x.participantSessions = Array.isArray(x.participantSessions) ? x.participantSessions : [];
+    for (const demoEvent of demoIndications()) {
+      if (!x.events.some((event) => event.id === demoEvent.id)) x.events.push(demoEvent);
+    }
+    for (const event of x.events) {
+      if (event.status === "review" || event.status === "onsite") event.status = "new";
+    }
+    x.events.sort((a, b) => Number(b.time) - Number(a.time));
     x.monitoring = x.monitoring || { active: false, startedAt: null };
     if (x.monitoring.active && !x.sessions.some(cameraConnected)) x.monitoring = { active: false, startedAt: null };
     for (const event of x.events) {
@@ -86,6 +102,14 @@
     write(x);
     return event;
   }
+  function addViolation(data) {
+    if (!data?.participantId || !data?.sessionId || !data?.indicationTitle || !data?.violationType || !data?.reviewer) return null;
+    const x = get();
+    const record = { id: data.id || `VI-${Date.now()}-${x.violations.length + 1}`, ...data, createdAt: data.createdAt || new Date().toISOString() };
+    x.violations.unshift(record);
+    write(x);
+    return record;
+  }
   function upsertSession(s) { return updateSession(s.id, s) || s; }
   function updateSession(id, changes) {
     const x = get(); const s = x.sessions.find((item) => item.id === id || item.desk === id); if (!s) return null;
@@ -127,5 +151,5 @@
   function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]); }
   function toast(msg) { let el = document.querySelector(".toast"); if (!el) { el = document.createElement("div"); el.className = "toast"; document.body.appendChild(el); } el.textContent = msg; el.classList.remove("hide"); clearTimeout(window.__ugToast); window.__ugToast = setTimeout(() => el.classList.add("hide"), 2800); }
   function requireRole(role) { const u = currentUser(); if (!u || u.role !== role) { location.replace("../../pages/login/index.html"); return null; } return u; }
-  window.UjiStore = { KEY, get, addEvent, runDemoScenario, resetDemo, updateEvent, reviewEvent, upsertSession, updateSession, setMonitoring, saveParticipantSession, getParticipantSession, updateParticipantSession, currentUser, setUser, logout, fmt, fmtLong, ago, esc, toast, requireRole, cameraConnected };
+  window.UjiStore = { KEY, get, addEvent, runDemoScenario, resetDemo, updateEvent, reviewEvent, addViolation, upsertSession, updateSession, setMonitoring, saveParticipantSession, getParticipantSession, updateParticipantSession, currentUser, setUser, logout, fmt, fmtLong, ago, esc, toast, requireRole, cameraConnected };
 })();
