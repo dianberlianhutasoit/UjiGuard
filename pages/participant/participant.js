@@ -10,7 +10,10 @@
   const bounds = UjiAdminStore.sessionBounds(schedule);
   if (!schedule || !Number.isFinite(bounds.startAt) || !Number.isFinite(bounds.endAt) || bounds.endAt <= bounds.startAt) { location.replace("identity.html"); return; }
   const previousSession = UjiStore.getParticipantSession(demo.id);
-  if (previousSession?.monitoringStatus === "Monitoring Aktif") {
+  const samePreviousSession = previousSession?.sessionId === demo.sessionId;
+  const wasMonitoringInterrupted = samePreviousSession && ["Terhenti", "Monitoring Aktif"].includes(previousSession.monitoringStatus);
+  const abandonedSession = samePreviousSession && previousSession.monitoringStatus === "Keluar Sebelum Selesai";
+  if (samePreviousSession && previousSession?.monitoringStatus === "Monitoring Aktif") {
     UjiStore.updateParticipantSession(demo.id, { monitoringStatus: "Terhenti", leftAt: new Date().toISOString() });
   }
   let cameraStream = null;
@@ -25,24 +28,25 @@
   const setStatus = (kind, value) => {
     const node = $(statusIds[kind]);
     node.textContent = value;
-    node.classList.toggle("is-active", value === "Aktif");
-    node.classList.toggle("is-error", value === "Bermasalah");
+    node.classList.toggle("is-active", value === "Aktif" || value === "Jaringan Tersedia");
+    node.classList.toggle("is-error", value === "Bermasalah" || value === "Tidak Ada Jaringan");
   };
   const isLive = (stream, kind) => !!stream?.getTracks().some((track) => track.kind === kind && track.readyState === "live");
-  const canEnterSession = () => Date.now() >= bounds.startAt && Date.now() < bounds.endAt;
+  const isScheduleCompleted = () => UjiAdminStore.get().examSessions.some((item) => item.id === demo.sessionId && item.examId === demo.examId && item.status === "Selesai");
+  const canEnterSession = () => !abandonedSession && !isScheduleCompleted() && Date.now() >= bounds.startAt && Date.now() < bounds.endAt;
   const updateEnterButton = () => {
     $("enter-exam").disabled = !(isLive(cameraStream, "video") && isLive(microphoneStream, "audio") && canEnterSession());
   };
   const updateConnectionStatus = () => {
-    const status = navigator.onLine ? "Aktif" : "Bermasalah";
+    const status = navigator.onLine ? "Jaringan Tersedia" : "Tidak Ada Jaringan";
     setStatus("connection", status);
     if (sessionStarted && activeRecord && !sessionEnded) {
       const devicesOkay = isLive(cameraStream, "video") && isLive(microphoneStream, "audio");
-      const monitoringStatus = !devicesOkay ? "Perangkat Bermasalah" : navigator.onLine ? "Monitoring Aktif" : "Koneksi Bermasalah";
+      const monitoringStatus = !devicesOkay ? "Perangkat Bermasalah" : navigator.onLine ? "Monitoring Aktif" : "Jaringan Bermasalah";
       UjiStore.updateParticipantSession(user.id, { monitoringStatus });
       activeRecord.monitoringStatus = monitoringStatus;
       $("active-connection-status").textContent = status;
-      $("active-connection-status").classList.toggle("is-error", status !== "Aktif");
+      $("active-connection-status").classList.toggle("is-error", status !== "Jaringan Tersedia");
       $("active-monitoring-status").textContent = monitoringStatus;
     }
   };
@@ -99,14 +103,15 @@
   };
   const tickCountdown = () => {
     const now = Date.now();
-    const ended = now >= bounds.endAt;
-    const beforeStart = now < bounds.startAt;
+    const scheduleCompleted = isScheduleCompleted();
+    const ended = scheduleCompleted || now >= bounds.endAt;
+    const beforeStart = !scheduleCompleted && now < bounds.startAt;
     const target = beforeStart ? bounds.startAt : bounds.endAt;
     const remaining = Math.max(0, bounds.endAt - now);
     $("session-countdown").textContent = formatCountdown(bounds.endAt);
-    $("session-gate-status").textContent = ended ? "Sesi telah selesai" : beforeStart ? "Sesi belum dimulai" : "Sesi sedang berlangsung";
-    $("session-gate-label").textContent = ended ? "" : beforeStart ? "Mulai dalam" : "Waktu tersisa";
-    $("session-gate-countdown").textContent = ended ? "" : formatCountdown(target);
+    $("session-gate-status").textContent = abandonedSession ? "Sesi telah ditinggalkan sebelum waktu selesai" : ended ? "Sesi telah selesai" : beforeStart ? "Sesi belum dimulai" : "Sesi sedang berlangsung";
+    $("session-gate-label").textContent = ended || abandonedSession ? "" : beforeStart ? "Mulai dalam" : "Waktu tersisa";
+    $("session-gate-countdown").textContent = ended || abandonedSession ? "" : formatCountdown(target);
     $("session-gate").classList.toggle("is-ended", ended);
     updateEnterButton();
     if (sessionStarted && remaining <= 0) finishSession(false);
@@ -128,11 +133,19 @@
   $("active-start-time").textContent = `${schedule.startTime} WIB`;
   $("active-end-time").textContent = `${schedule.endTime} WIB`;
   $("active-mode").textContent = demo.mode;
+  if (abandonedSession) {
+    $("session-block-message").textContent = "Sesi ini telah ditinggalkan sebelum waktu selesai. Anda tidak dapat masuk kembali ke sesi yang sama.";
+    $("session-block-message").classList.remove("hide");
+    $("check-devices").disabled = true;
+    $("enter-exam").disabled = true;
+  }
+  if (wasMonitoringInterrupted && !abandonedSession) $("session-interruption-note").classList.remove("hide");
   tickCountdown();
   countdownTimer = setInterval(tickCountdown, 1000);
   updateConnectionStatus();
 
   $("check-devices").addEventListener("click", async () => {
+    if (abandonedSession) return;
     stopStreams();
     sessionStarted = false;
     activeRecord = null;
@@ -143,8 +156,8 @@
     $("preview-empty").classList.remove("hide");
     $("enter-exam").disabled = true;
     $("check-devices").disabled = true;
-    if (Date.now() >= bounds.endAt) {
-      $("device-error").textContent = "Waktu sesi ujian ini sudah berakhir.";
+    if (isScheduleCompleted() || Date.now() >= bounds.endAt) {
+      $("device-error").textContent = isScheduleCompleted() ? "Status sesi telah selesai dan ujian tidak dapat dimulai." : "Waktu sesi ujian ini sudah berakhir.";
       $("device-error").classList.remove("hide");
       $("check-devices").disabled = false;
       return;
@@ -182,7 +195,7 @@
   });
 
   $("enter-exam").addEventListener("click", () => {
-    if (!isLive(cameraStream, "video") || !isLive(microphoneStream, "audio") || !canEnterSession()) return;
+    if (abandonedSession || isScheduleCompleted() || !isLive(cameraStream, "video") || !isLive(microphoneStream, "audio") || !canEnterSession()) return;
     const joinedAt = new Date().toISOString();
     activeRecord = {
       participantId: demo.id, name: demo.name, examId: demo.examId, sessionId: demo.sessionId,

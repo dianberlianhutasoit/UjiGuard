@@ -1,7 +1,7 @@
 (function () {
   "use strict";
   const data = window.UjiAdminStore?.get();
-  const participants = (data?.participants || []).filter((participant) => !participant.demoData).map((participant) => {
+  const participants = (data?.participants || []).filter((participant) => !participant.demoData && participant.status !== "Nonaktif").map((participant) => {
     const exam = data.exams.find((item) => item.id === participant.examId);
     const session = data.examSessions.find((item) => item.id === participant.sessionId && item.examId === participant.examId);
     return {

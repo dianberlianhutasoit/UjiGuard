@@ -24,8 +24,10 @@
             <div class="device-status-row"><div><span class="device-icon">◉</span><div><strong>Kamera</strong><small>Untuk persiapan ujian</small></div></div><span class="status-pill" id="camera-status">Belum Aktif</span></div>
             <div class="camera-preview" id="camera-preview-wrap"><video id="camera-preview" autoplay muted playsinline></video><div class="preview-empty" id="preview-empty">Preview kamera akan tampil setelah izin diberikan.</div></div>
             <div class="device-status-row"><div><span class="device-icon">◖</span><div><strong>Mikrofon</strong><small>Izin audio browser</small></div></div><span class="status-pill" id="microphone-status">Belum Aktif</span></div>
-            <div class="device-status-row"><div><span class="device-icon">⌁</span><div><strong>Koneksi / monitoring</strong><small>Status halaman dan koneksi</small></div></div><span class="status-pill" id="connection-status">Belum Aktif</span></div>
+            <div class="device-status-row"><div><span class="device-icon">⌁</span><div><strong>Jaringan</strong><small>Koneksi jaringan browser</small></div></div><span class="status-pill" id="connection-status">Belum Aktif</span></div>
             <div class="device-error hide" id="device-error" role="alert"></div>
+            <div class="device-error hide" id="session-block-message" role="alert"></div>
+            <div class="summary-note hide" id="session-interruption-note" role="status">Monitoring sebelumnya terputus. Periksa ulang perangkat sebelum masuk kembali.</div>
             <button class="btn btn-light device-check-button" id="check-devices" type="button">Periksa Kamera &amp; Mikrofon</button>
             <button class="btn btn-primary device-enter-button" id="enter-exam" type="button" disabled>Masuk Ujian</button>
           </article>
@@ -45,7 +47,7 @@
           <div class="active-exam-title"><div class="eyebrow">UJIAN BERLANGSUNG</div><h2 id="active-exam-name"></h2></div>
           <dl class="active-exam-details"><div><dt>Nama peserta</dt><dd id="active-name"></dd></div><div><dt>ID peserta</dt><dd id="active-id"></dd></div><div><dt>Sesi</dt><dd id="active-session"></dd></div><div><dt>Waktu sesi</dt><dd id="active-time"></dd></div><div><dt>Waktu mulai</dt><dd id="active-start-time"></dd></div><div><dt>Waktu selesai</dt><dd id="active-end-time"></dd></div><div><dt>Mode</dt><dd id="active-mode"></dd></div></dl>
           <div class="session-countdown"><span>Waktu tersisa</span><strong id="session-countdown">--:--:--</strong></div>
-          <div class="active-device-status"><span>Kamera <b id="active-camera-status">Aktif</b></span><span>Mikrofon <b id="active-microphone-status">Aktif</b></span><span>Koneksi <b id="active-connection-status">Aktif</b></span></div>
+          <div class="active-device-status"><span>Kamera <b id="active-camera-status">Aktif</b></span><span>Mikrofon <b id="active-microphone-status">Aktif</b></span><span>Jaringan <b id="active-connection-status">Jaringan Tersedia</b></span></div>
           <button class="btn btn-light leave-exam-button" id="leave-exam" type="button">Keluar dari Ujian</button>
         </article>
       </section>

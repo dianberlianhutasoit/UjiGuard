@@ -192,6 +192,18 @@
         return;
       }
     }
+    if (entity === "participant") {
+      const state = data();
+      const validSessions = state.examSessions.filter((item) => {
+        if (item.examId !== record.examId || !item.id || !item.date || !item.startTime || !item.endTime) return false;
+        const sessionBounds = UjiAdminStore.sessionBounds(item);
+        return Number.isFinite(sessionBounds.startAt) && Number.isFinite(sessionBounds.endAt) && sessionBounds.endAt > sessionBounds.startAt;
+      });
+      if (!record.sessionId || !validSessions.some((item) => item.id === record.sessionId)) {
+        window.UjiStore.toast("Buat atau pilih sesi ujian terlebih dahulu.");
+        return;
+      }
+    }
     const collection = { exam: "exams", session: "examSessions", participant: "participants", proctor: "users" }[entity];
     const saved = UjiAdminStore.save(collection, record);
     if (!saved) { window.UjiStore.toast("Data belum dapat disimpan. Periksa kembali ID dan pilihan form."); return; }
