@@ -17,7 +17,7 @@
 }
 .login-story {
   background: var(--navy);
-  color: #f8fffb;
+  color: #f8fffb; 
   display: flex;
   flex-direction: column;
   min-height: 720px;
