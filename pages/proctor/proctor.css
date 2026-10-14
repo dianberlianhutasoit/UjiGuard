@@ -98,12 +98,22 @@
   stroke-linejoin: round;
   display: block;
 }
-.navico svg { flex: none; }
+.navico svg {
+  flex: none;
+}
 .logout-icon svg,
-.mobile-menu svg { width: 19px; height: 19px; }
-.note-spark svg { color: var(--mint); }
+.mobile-menu svg {
+  width: 19px;
+  height: 19px;
+}
+.note-spark svg {
+  color: var(--mint);
+}
 .event-type svg,
-.detail-symbol svg { width: 20px; height: 20px; }
+.detail-symbol svg {
+  width: 20px;
+  height: 20px;
+}
 .detail-symbol.placeholder-symbol::before {
   content: "";
   width: 16px;
@@ -113,9 +123,20 @@
   border-radius: 50%;
   box-shadow: inset 0 0 0 4px white;
 }
-.camera-detail-empty-icon .ui-icon { width: 28px; height: 28px; }
-.notice-icon svg { width: 20px; height: 20px; }
-.station { text-align: left; font-family: inherit; cursor: pointer; width: 100%; }
+.camera-detail-empty-icon .ui-icon {
+  width: 28px;
+  height: 28px;
+}
+.notice-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.station {
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+}
 .nav-count {
   margin-left: auto;
   font-size: 9px;
