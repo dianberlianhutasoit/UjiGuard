@@ -6,7 +6,7 @@
   document
     .querySelectorAll("[data-user-email]")
     .forEach((e) => (e.textContent = u?.email || "demo@tervia.demo"));
-  document 
+  document
     .querySelectorAll("[data-logout]")
     .forEach((e) =>
       e.addEventListener("click", () => window.UjiStore.logout()),
