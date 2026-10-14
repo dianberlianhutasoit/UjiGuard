@@ -12,7 +12,7 @@
       startTime: session?.startTime || "",
       endTime: session?.endTime || "",
       sessionMode: session?.mode || "REMOTE",
-      mode: session?.mode === "ONSITE" ? "Onsite" : "Remote",
+      mode: session?.mode === "ONSITE" ? "Luring" : "Daring",
     };
   });
   const staff = (data?.users || []).filter((user) => user.status !== "Nonaktif");

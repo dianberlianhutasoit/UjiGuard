@@ -6,6 +6,9 @@
     users: [
       { id: "PGW-001", role: "proctor", name: "Alya Pratama", email: "pengawas@ujiguard.demo", password: "demo123", status: "Aktif" },
       { id: "ADM-001", role: "admin", name: "Admin UjiGuard", email: "admin@ujiguard.demo", password: "demo123", status: "Aktif" },
+      { id: "PGW-002", role: "proctor", name: "Surya Mahendra", email: "surya@ujiguard.demo", password: "demo123", status: "Aktif" },
+      { id: "PGW-003", role: "proctor", name: "Nita Kusuma", email: "nita@ujiguard.demo", password: "demo123", status: "Aktif" },
+      { id: "PGW-004", role: "proctor", name: "Arif Santoso", email: "arif@ujiguard.demo", password: "demo123", status: "Nonaktif" },
     ],
     participants: [
       { id: "PST-001", participantNo: "26-001", role: "participant", name: "Nadia Putri", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar" },
@@ -14,15 +17,24 @@
       { id: "PST-004", participantNo: "26-004", role: "participant", name: "Bima Saputra", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar", demoData: true },
       { id: "PST-005", participantNo: "26-005", role: "participant", name: "Salsa Maharani", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar", demoData: true },
       { id: "PST-006", participantNo: "26-006", role: "participant", name: "Farhan Akbar", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar", demoData: true },
+      { id: "PST-007", participantNo: "26-007", role: "participant", name: "Intan Permata", examId: "EXAM-002", sessionId: "SESSION-02", status: "Aktif", demoData: true },
+      { id: "PST-008", participantNo: "26-008", role: "participant", name: "Arman Wijaya", examId: "EXAM-003", sessionId: "SESSION-03", status: "Nonaktif", demoData: true },
     ],
     exams: [
       { id: "EXAM-001", name: "Ujian Kompetensi Dasar", type: "Mandiri", description: "Ujian demo UjiGuard.", status: "Aktif" },
+      { id: "EXAM-002", name: "Uji Kompetensi Lapangan", type: "Terjadwal", description: "Sesi onsite untuk variasi demo admin.", status: "Aktif" },
+      { id: "EXAM-003", name: "Sertifikasi Lanjutan", type: "Terjadwal", description: "Ujian demo yang akan datang.", status: "Draft" },
+      { id: "EXAM-004", name: "Ujian Kompetensi Dasar 2025", type: "Mandiri", description: "Contoh ujian yang telah selesai.", status: "Selesai" },
     ],
     examSessions: [
       { id: "SESSION-01", examId: "EXAM-001", name: "Sesi 01", date: "2026-10-15", startTime: "09:00", endTime: "10:00", mode: "REMOTE", location: "", status: "Akan Datang" },
+      { id: "SESSION-02", examId: "EXAM-002", name: "Sesi Onsite 01", date: "2026-10-14", startTime: "13:00", endTime: "15:00", mode: "ONSITE", location: "Kampus UjiGuard · Ruang Cendekia", status: "Aktif" },
+      { id: "SESSION-03", examId: "EXAM-003", name: "Sesi 01", date: "2026-10-18", startTime: "09:00", endTime: "11:00", mode: "REMOTE", location: "", status: "Akan Datang" },
+      { id: "SESSION-04", examId: "EXAM-004", name: "Sesi Arsip", date: "2026-10-10", startTime: "09:00", endTime: "11:00", mode: "ONSITE", location: "Aula Utama", status: "Selesai" },
     ],
     proctorAssignments: [
       { sessionId: "SESSION-01", proctorId: "PGW-001" },
+      { sessionId: "SESSION-02", proctorId: "PGW-002" },
     ],
   };
   const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -33,9 +45,17 @@
       if (saved && typeof saved === "object") {
         const state = {};
         COLLECTIONS.forEach((key) => { state[key] = Array.isArray(saved[key]) ? saved[key] : clone(seed[key]); });
-        // Add demo participants to existing prototype data without replacing admin edits.
-        for (const demoParticipant of seed.participants.filter((item) => item.demoData)) {
+        // Add demo master data to existing prototype data without replacing admin edits.
+        ["users", "exams", "examSessions"].forEach((collection) => {
+          for (const demoRecord of seed[collection]) {
+            if (!state[collection].some((item) => item.id === demoRecord.id)) state[collection].push(clone(demoRecord));
+          }
+        });
+        for (const demoParticipant of seed.participants) {
           if (!state.participants.some((item) => item.id === demoParticipant.id)) state.participants.push(clone(demoParticipant));
+        }
+        for (const assignment of seed.proctorAssignments) {
+          if (!state.proctorAssignments.some((item) => item.sessionId === assignment.sessionId && item.proctorId === assignment.proctorId)) state.proctorAssignments.push(clone(assignment));
         }
         return state;
       }

@@ -5,7 +5,7 @@
     .forEach((e) => (e.textContent = u?.name || "Demo User"));
   document
     .querySelectorAll("[data-user-email]")
-    .forEach((e) => (e.textContent = u?.email || "demo@ujiguard.demo"));
+    .forEach((e) => (e.textContent = u?.email || "demo@tervia.demo"));
   document 
     .querySelectorAll("[data-logout]")
     .forEach((e) =>

@@ -1,0 +1,495 @@
+/* Tervia shared theme (light base, premium, demo-ready).
+   Palette: #061826 Midnight Abyss · #1C4E75 Atlantic Steel · #2FA0C6 Tidepool Teal
+   #BDE5FF Glacier Mist · white. Loaded AFTER page CSS so these rules win. */
+:root {
+  --ug-abyss: #061826;
+  --ug-steel: #1c4e75;
+  --ug-teal: #2fa0c6;
+  --ug-surf: #58c9f3;
+  --ug-ice: #bde5ff;
+  --ug-page: #eef5fa;
+  --ug-card: #ffffff;
+  --ug-ink: #0b2836;
+  --ug-body: #2a4453;
+  --ug-muted: #54707f;
+  --ug-line: #d8e8f2;
+  --ug-tint: #eaf5fb;
+  --ug-radius: 16px;
+  --ug-radius-sm: 12px;
+  --ug-glow: 0 0 0 1px #2fa0c644, 0 4px 14px #1c4e7512;
+  --ug-shadow: 0 8px 24px #1c4e7510;
+}
+
+/* ---------- page shells: light base ---------- */
+.proctor-page, .admin-page, .participant-page, .login-body, .role-page {
+  background:
+    radial-gradient(1000px 380px at 90% -100px, #2fa0c612, transparent 60%),
+    var(--ug-page);
+  color: var(--ug-ink);
+}
+.proctor-page .eyebrow, .admin-page .eyebrow, .participant-page .eyebrow { color: var(--ug-steel); }
+.proctor-content, .admin-content { background: transparent; }
+
+/* ---------- logo mark ---------- */
+.role-brand-mark svg, .brand-mark svg { width: 62%; height: 62%; }
+.role-brand-mark.brand-logo, .brand-mark.brand-logo { background: transparent; box-shadow: none; }
+.brand-logo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.tervia-lockup { display: block; height: 104px; width: auto; max-width: 100%; margin: 2px auto 12px; object-fit: contain; }
+
+/* ---------- sidebar (palette accent, stays deep) ---------- */
+.proctor-sidebar, .admin-sidebar {
+  background: linear-gradient(180deg, #0e2c42 0%, #061826 100%);
+  border-right: 1px solid #bde5ff1f;
+}
+.proctor-logo small, .admin-logo small { color: #9db8c9; }
+.proctor-logo .role-brand-mark, .admin-logo .role-brand-mark {
+  background: linear-gradient(135deg, var(--ug-teal), var(--ug-steel));
+  color: #fff;
+  box-shadow: 0 0 18px #2fa0c655;
+}
+.proctor-nav button, .admin-nav button { color: #c3d9e8; }
+.proctor-nav button:hover, .admin-nav button:hover { background: #2fa0c622; color: #fff; }
+.proctor-nav button.is-active, .admin-nav button.is-active {
+  background: #1c4e7542;
+  color: #fff;
+  box-shadow: inset 3px 0 var(--ug-teal);
+}
+.proctor-nav b { background: var(--ug-teal); color: #04222f; }
+.admin-nav button span { color: var(--ug-teal); }
+.proctor-account, .admin-sidebar-bottom { border-top-color: #bde5ff1f; }
+.proctor-account strong, .admin-sidebar-bottom strong { color: #fff; }
+.proctor-account small, .admin-sidebar-bottom small, .admin-nav-label { color: #9db8c9; }
+.admin-avatar { background: linear-gradient(135deg, var(--ug-teal), var(--ug-steel)); color: #fff; }
+.proctor-account button, .admin-sidebar-bottom button { color: var(--ug-ice); }
+.proctor-account button:hover, .admin-sidebar-bottom button:hover { background: #2fa0c622; }
+
+/* ---------- topbar: white ---------- */
+.proctor-topbar, .admin-topbar {
+  background: #fffffff2;
+  border-bottom: 1px solid var(--ug-line);
+}
+.proctor-topbar h1, .admin-topbar h1 { color: var(--ug-ink); }
+.proctor-live-status { color: var(--ug-steel); }
+.proctor-live-status i { background: var(--ug-teal); box-shadow: 0 0 0 4px #2fa0c633; }
+.admin-top-user { color: var(--ug-ink); }
+.admin-top-user small { color: var(--ug-muted); }
+
+/* ---------- cards & surfaces: white ---------- */
+.proctor-panel, .detail-card, .session-overview, .dashboard-summary,
+.admin-panel, .admin-metric, .admin-shortcut, .proctor-metric,
+.admin-feature {
+  background: var(--ug-card);
+  border: 1px solid var(--ug-line);
+  border-radius: var(--ug-radius);
+  box-shadow: var(--ug-shadow);
+}
+.proctor-panel h2, .detail-card h2, .session-overview h2, .dashboard-summary h2,
+.admin-panel h3, .admin-page-head h2, .proctor-toolbar h2 { color: var(--ug-ink); }
+.proctor-panel p, .detail-card p, .session-overview p, .proctor-toolbar p,
+.admin-panel-head p, .admin-page-head p, .dashboard-summary-heading p { color: var(--ug-muted); }
+.proctor-metric span, .admin-metric span { color: var(--ug-muted); }
+.proctor-metric strong, .admin-metric strong { color: var(--ug-steel); }
+.session-mode { background: var(--ug-tint); border: 1px solid var(--ug-line); color: var(--ug-steel); }
+
+/* ---------- participant cards: always readable states ---------- */
+.participant-list { background: transparent; }
+.participant-card {
+  background: var(--ug-card);
+  border: 1px solid var(--ug-line);
+  border-radius: var(--ug-radius-sm);
+  color: var(--ug-ink);
+}
+.participant-card small, .participant-card-status span { color: var(--ug-muted); }
+.participant-card strong, .participant-card-status b { color: var(--ug-ink); }
+.participant-card:hover {
+  border-color: var(--ug-teal);
+  background: var(--ug-tint);
+  transform: translateY(-1px);
+  box-shadow: var(--ug-glow);
+}
+.participant-card:hover small, .participant-card:hover span,
+.participant-card:hover strong, .participant-card:hover b { color: var(--ug-ink); }
+.participant-card.is-selected {
+  border: 2px solid var(--ug-teal);
+  background: var(--ug-tint);
+  box-shadow: var(--ug-glow);
+}
+.participant-card:focus-visible { outline: 3px solid #2fa0c688; outline-offset: 2px; }
+
+/* ---------- pills & badges ---------- */
+.attention-pill { background: var(--ug-tint); border: 1px solid var(--ug-line); color: var(--ug-steel); }
+.attention-pill.review { background: #fdf1de; border-color: #f0d9ac; color: #8a5a12; }
+.source-pill.simulation { background: var(--ug-tint); border: 1px solid #a9d6ec; color: #16617f; }
+.status-tag { background: var(--ug-tint); color: var(--ug-steel); }
+.status-tag.good { background: #e2f5ea; color: #1c6b44; }
+.status-tag.warn { background: #fdf1de; color: #8a5a12; }
+
+/* ---------- detail ---------- */
+.detail-facts > div { background: #f2f7fa; border: 1px solid var(--ug-line); border-radius: 10px; }
+.detail-facts span { color: var(--ug-muted); }
+.detail-facts strong { color: var(--ug-ink); }
+.detail-section h3 { color: var(--ug-steel); }
+.detail-section h3 small { color: var(--ug-muted); }
+.detail-note, .detail-empty, .empty-state, .empty-admin { color: var(--ug-muted); }
+.indicator-item, .review-item, .upcoming-row { border-bottom-color: var(--ug-line); }
+.indicator-item strong, .review-item strong, .upcoming-row strong { color: var(--ug-ink); }
+.indicator-item small, .review-item small, .upcoming-row small, .indicator-item time, .review-item time { color: var(--ug-muted); }
+.dashboard-priority { border-top-color: var(--ug-line); }
+.dashboard-priority-item { background: var(--ug-card); border-bottom-color: var(--ug-line); }
+.dashboard-priority-item:hover { background: var(--ug-tint); }
+.dashboard-priority-item:hover strong { color: var(--ug-ink); }
+.dashboard-priority-item:hover small, .dashboard-priority-item:hover time { color: var(--ug-muted); }
+.dashboard-priority-item strong { color: var(--ug-ink); }
+.dashboard-priority-item small, .dashboard-priority-item time, .dashboard-priority h3 small { color: var(--ug-muted); }
+.dashboard-priority h3, .dashboard-summary-heading h2 { color: var(--ug-ink); }
+.demo-callout { background: var(--ug-tint); border: 1px dashed #a9d6ec; border-radius: var(--ug-radius-sm); color: var(--ug-muted); }
+.demo-callout strong { color: var(--ug-steel); }
+.session-line { padding: 14px 18px; }
+.session-line h2 { font-size: 15px; }
+.indications-workspace .participant-card { border-left: 3px solid #e0a83e; }
+.indications-workspace .participant-card.is-selected { border: 2px solid var(--ug-teal); }
+.detail-empty .empty-state { padding: 44px 20px; }
+.detail-empty .empty-state strong { display: block; margin-bottom: 8px; font-size: 14px; }
+.detail-empty .empty-state p { max-width: 340px; margin: 0 auto; line-height: 1.6; }
+
+/* ---------- buttons ---------- */
+.proctor-page .btn-primary, .admin-page .btn-primary,
+.participant-page .btn-primary, .login-submit.btn-primary,
+.role-page .role-primary.btn-primary {
+  background: var(--ug-steel);
+  color: #fff;
+  box-shadow: 0 2px 5px #06182616;
+}
+.proctor-page .btn-primary:hover, .admin-page .btn-primary:hover,
+.participant-page .btn-primary:hover, .login-submit.btn-primary:hover,
+.role-page .role-primary.btn-primary:hover {
+  background: #163f60;
+  box-shadow: 0 3px 8px #0618261c;
+  color: #fff;
+}
+.proctor-page .btn-light, .admin-page .btn-light {
+  background: var(--ug-card); border-color: var(--ug-line); color: var(--ug-ink);
+}
+.proctor-page .btn-light:hover, .admin-page .btn-light:hover {
+  border-color: var(--ug-teal); background: var(--ug-tint); color: var(--ug-ink);
+}
+.proctor-page .btn-danger { background: #fdeeee; border-color: #f3c9c9; color: #a02c26; }
+.proctor-page .btn-danger:hover { background: #fbdfe0; color: #a02c26; }
+
+/* Consistent, restrained controls across all roles. */
+.btn {
+  min-height: 42px;
+  padding: 9px 15px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 650;
+  box-shadow: none;
+  transition: background-color .14s ease, border-color .14s ease, color .14s ease, box-shadow .14s ease;
+}
+.btn-sm { min-height: 36px; padding: 7px 12px; border-radius: 9px; font-size: 12px; }
+.btn-primary:active, .btn-light:active, .btn-danger:active { transform: translateY(1px); box-shadow: none; }
+.btn:disabled { opacity: .56; box-shadow: none; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid #58c9f388;
+  outline-offset: 2px;
+}
+.admin-action {
+  min-height: 34px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 650;
+  box-shadow: none;
+}
+.admin-feature { border-radius: 14px; }
+.admin-feature-icon { background: var(--ug-steel); }
+.admin-feature:hover { transform: translateY(-1px); box-shadow: var(--ug-shadow); }
+.proctor-page .participant-card:hover,
+.proctor-page .dashboard-priority-item:hover,
+.proctor-page .session-select-card:hover,
+.admin-page .admin-feature:hover { transform: none; }
+.proctor-page .participant-card.is-selected { box-shadow: 0 0 0 1px #2fa0c644; }
+.proctor-page .participant-card,
+.admin-page .admin-panel,
+.proctor-page .proctor-panel { border-radius: 14px; }
+.proctor-page .participant-card { border-radius: 11px; }
+.admin-dialog, .violation-dialog { border-radius: 14px; }
+.admin-field input, .admin-field select, .admin-field textarea,
+.violation-dialog select, .violation-dialog textarea,
+.field input, .field select, .password-wrap input { border-radius: 9px; }
+
+/* ---------- tables: white, calm hover ---------- */
+.history-table-wrap, .admin-table-wrap { border: 1px solid var(--ug-line); border-radius: var(--ug-radius-sm); background: var(--ug-card); }
+.history-table, .admin-table { background: var(--ug-card); }
+.history-table th, .admin-table th { background: #eef5fa; color: var(--ug-steel); }
+.history-table td, .admin-table td { border-bottom-color: var(--ug-line); color: var(--ug-body); }
+.history-table tbody tr:hover td, .admin-table tbody tr:hover td { background: var(--ug-tint); color: var(--ug-ink); }
+.history-table td strong, .admin-table td strong { color: var(--ug-ink); }
+.history-table td small { color: var(--ug-muted); }
+.admin-action { background: var(--ug-card); border-color: var(--ug-line); color: var(--ug-steel); }
+.admin-action:hover { border-color: var(--ug-teal); background: var(--ug-tint); color: var(--ug-steel); }
+.admin-action.danger { color: #a02c26; }
+.admin-feature { text-align: left; font: inherit; cursor: pointer; }
+.admin-feature:hover { border-color: var(--ug-teal); transform: translateY(-2px); box-shadow: var(--ug-glow); }
+.admin-feature.is-info { cursor: default; }
+.admin-feature.is-info:hover { transform: none; box-shadow: var(--ug-shadow); }
+
+/* ---------- light form controls ---------- */
+.proctor-page, .admin-page, .participant-page, .role-page, .login-panel { color-scheme: light; }
+.admin-field input, .admin-field select, .admin-field textarea,
+.violation-dialog select, .violation-dialog textarea,
+.field input, .field select, .password-wrap input {
+  background: #fff;
+  border: 1px solid #c2dcec;
+  color: var(--ug-ink);
+}
+.admin-field input::placeholder, .violation-dialog textarea::placeholder,
+.field input::placeholder { color: #7c99a8; opacity: 1; }
+.admin-field label, .violation-dialog label, .field label { color: var(--ug-steel); }
+.admin-field input:focus, .admin-field select:focus, .admin-field textarea:focus,
+.violation-dialog select:focus, .violation-dialog textarea:focus,
+.field input:focus {
+  border-color: var(--ug-teal);
+  outline: 2px solid #2fa0c655;
+  outline-offset: 1px;
+}
+.admin-field input:disabled, .admin-field select:disabled {
+  opacity: 0.6;
+  background: #eef3f6;
+  cursor: not-allowed;
+}
+.admin-field input[type="date"], .admin-field input[type="time"] { min-height: 44px; accent-color: var(--ug-steel); }
+.admin-field input[type="date"]::-webkit-datetime-edit,
+.admin-field input[type="time"]::-webkit-datetime-edit { color: var(--ug-ink); }
+.admin-field input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.admin-field input[type="time"]::-webkit-datetime-edit-fields-wrapper { padding: 2px 0; }
+.admin-field input[type="date"]::-webkit-calendar-picker-indicator,
+.admin-field input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 0.8;
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 4px;
+  border-radius: 6px;
+  background: var(--ug-tint);
+  border: 1px solid var(--ug-line);
+}
+.admin-field input[type="date"]:hover::-webkit-calendar-picker-indicator,
+.admin-field input[type="time"]:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  background: var(--ug-ice);
+}
+.admin-dialog, .violation-dialog {
+  background: var(--ug-card);
+  border: 1px solid var(--ug-line);
+  color: var(--ug-ink);
+  box-shadow: var(--ug-shadow);
+}
+.admin-dialog h2, .violation-dialog h2 { color: var(--ug-ink); }
+.assignment-form, .admin-panel-head, .upcoming-row { border-bottom-color: var(--ug-line); }
+.dialog-close { color: var(--ug-muted); }
+.dialog-close:hover { color: var(--ug-ink); }
+
+/* ---------- session picker ---------- */
+.session-select-card, .session-switcher button {
+  background: var(--ug-card); border: 1px solid var(--ug-line); color: var(--ug-ink);
+}
+.session-switcher button.is-active, .session-select-card:hover {
+  border-color: var(--ug-teal); box-shadow: var(--ug-glow); color: var(--ug-ink);
+}
+.session-select-card small, .session-switcher small { color: var(--ug-muted); }
+
+/* ---------- camera previews stay dark monitors ---------- */
+.scene-lag .preview-scene::after {
+  content: "Koneksi tidak stabil · Data Simulasi";
+  position: absolute; left: 10px; bottom: 9px; padding: 6px 8px;
+  border: 1px solid #f5c54266; border-radius: 20px; background: #3a2c10e8;
+  color: #ffe0a9; font-size: 8px; font-weight: 700;
+}
+.scene-lag .preview-person { animation: ug-lag 1.1s steps(2) infinite; }
+@keyframes ug-lag { 50% { transform: translate(6px, 25px); opacity: 0.75; } }
+
+/* ---------- participant & identity: light cards on light page ---------- */
+.participant-page .role-card, .role-page .role-card {
+  background: var(--ug-card);
+  border: 1px solid var(--ug-line);
+  color-scheme: light;
+}
+.participant-page .stage-heading h1, .role-page .role-card h1 { color: var(--ug-ink); }
+.participant-page .stage-heading p, .role-page .role-intro { color: var(--ug-muted); }
+.exam-summary h2, .active-exam-title h2 { color: var(--ug-ink); }
+.exam-summary dl dt, .active-exam-details dt, .summary-note { color: var(--ug-muted); }
+.exam-summary dl dd, .active-exam-details dd { color: var(--ug-ink); }
+.device-status-row { border-bottom-color: var(--ug-line); }
+.device-status-row strong { color: var(--ug-ink); }
+.device-status-row small { color: var(--ug-muted); }
+.session-gate { background: var(--ug-tint); border-color: #a9d6ec; color: var(--ug-body); }
+.session-gate strong, .session-gate b { color: var(--ug-steel); }
+.identity-shell .role-brand { color: var(--ug-ink); }
+.role-page .role-back-link { color: var(--ug-steel); }
+.role-page .role-back-link:hover { color: var(--ug-abyss); }
+.role-page .role-footer { color: var(--ug-muted); }
+.participant-page .btn-light { background: var(--ug-card); border-color: var(--ug-line); color: var(--ug-ink); }
+.participant-page .btn-light:hover { border-color: var(--ug-teal); background: var(--ug-tint); }
+
+/* ---------- login: white wrap, deep story accent ---------- */
+.login-wrap {
+  background: var(--ug-card);
+  border: 1px solid var(--ug-line);
+}
+.login-story { background: linear-gradient(160deg, #123f5d 0%, #061826 75%); }
+.login-panel { color-scheme: light; }
+.login-form-wrap { width: min(400px, 100%); margin: auto; padding: 12px 0; }
+.login-form-wrap h2 { color: var(--ug-ink); font-size: 24px; letter-spacing: -0.03em; margin: 10px 0 8px; }
+.login-form-wrap .eyebrow { color: var(--ug-steel); font-size: 10px; letter-spacing: 0.16em; }
+.login-form-wrap .form-intro { color: var(--ug-muted); font-size: 12.5px; margin: 0 0 22px; }
+.login-form-wrap form { gap: 14px; }
+.login-form-wrap .field { gap: 7px; }
+.login-form-wrap .field label { color: var(--ug-steel); font-size: 11px; font-weight: 700; }
+.login-form-wrap .field input {
+  background: #fff;
+  border: 1px solid #c2dcec;
+  color: var(--ug-ink);
+  min-height: 46px;
+  border-radius: 11px;
+}
+.login-form-wrap .field input::placeholder { color: #7c99a8; opacity: 1; }
+.login-form-wrap .field input:focus { border-color: var(--ug-teal); outline: 2px solid #2fa0c655; outline-offset: 1px; }
+.login-submit.btn-primary { min-height: 48px; }
+.eye-btn { color: var(--ug-muted); }
+.eye-btn:hover { background: var(--ug-tint); color: var(--ug-steel); }
+.selected-id { background: var(--ug-tint); border-color: var(--ug-line); color: var(--ug-body); }
+.selected-id strong { color: var(--ug-steel); letter-spacing: 0.04em; }
+.auth-back { color: var(--ug-steel); display: block; margin: 2px auto 0; }
+.auth-back:hover { color: var(--ug-abyss); }
+.demo-box, .auth-demo-box { background: var(--ug-tint); border-color: var(--ug-line); }
+.demo-top strong, .auth-demo-box > strong { color: var(--ug-ink); }
+.demo-top p, .auth-demo-box p { color: var(--ug-muted); }
+.demo-account { border-top-color: var(--ug-line); }
+.demo-account span { color: var(--ug-muted); }
+.demo-account code, .auth-demo-box code { background: #fff; border: 1px solid var(--ug-line); color: var(--ug-steel); }
+.demo-account button { background: var(--ug-card); border-color: var(--ug-line); color: var(--ug-steel); }
+.demo-account button:hover { background: var(--ug-tint); border-color: var(--ug-teal); }
+.demo-password, .auth-demo-box small { color: var(--ug-muted); border-top-color: var(--ug-line); }
+.privacy-mini { color: var(--ug-muted); }
+.privacy-mini span { color: var(--ug-teal); }
+.login-error { background: #fdeeee; border-color: #f3c9c9; color: #a02c26; }
+.login-footer { color: var(--ug-muted); }
+.auth-story-copy h1 { color: #fff; }
+.auth-story-copy p, .story-foot { color: #b9d2e2; }
+.brand-mark { background: linear-gradient(135deg, var(--ug-teal), var(--ug-steel)); color: #fff; }
+
+/* ---------- toast stays deep ---------- */
+.toast { background: var(--ug-abyss); color: #fff; }
+
+/* ---------- typography rhythm ---------- */
+.proctor-panel p, .detail-card p, .admin-panel-head p, .admin-page-head p,
+.demo-callout small, .dashboard-summary-heading p { line-height: 1.6; }
+.indicator-item small, .review-item small, .upcoming-row small { line-height: 1.55; }
+.history-table td, .admin-table td { line-height: 1.55; }
+.login-form-wrap h2, .role-card h1, .proctor-toolbar h2 { text-wrap: balance; }
+
+@media (max-width: 760px) {
+  .proctor-page .btn-primary, .admin-page .btn-primary { box-shadow: none; }
+}
+
+/* Final presentation pass: keep controls, logos and interactive cards crisp. */
+.brand-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  image-rendering: auto;
+}
+.role-brand-mark.brand-logo,
+.brand-mark.brand-logo {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.proctor-page .participant-card,
+.admin-page .admin-feature,
+.session-select-card,
+.session-switcher button,
+.dashboard-priority-item {
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.proctor-page .participant-card:hover,
+.proctor-page .participant-card.is-selected,
+.proctor-page .dashboard-priority-item:hover,
+.proctor-page .session-select-card:hover,
+.proctor-page .session-switcher button:hover,
+.admin-page .admin-feature:hover {
+  color: var(--ug-ink);
+}
+.proctor-page .participant-card:hover *,
+.proctor-page .participant-card.is-selected *,
+.proctor-page .dashboard-priority-item:hover * {
+  color: inherit;
+}
+.proctor-page .participant-card:hover strong,
+.proctor-page .participant-card.is-selected strong,
+.proctor-page .dashboard-priority-item:hover strong { color: var(--ug-ink); }
+.proctor-page .participant-card:hover small,
+.proctor-page .participant-card.is-selected small,
+.proctor-page .dashboard-priority-item:hover small,
+.proctor-page .dashboard-priority-item:hover time { color: var(--ug-muted); }
+.admin-dialog { padding: 0; }
+.admin-dialog form { padding: 24px; }
+.dialog-fields { display: grid; gap: 14px; }
+.admin-form-grid { gap: 14px; }
+.admin-field { gap: 7px; }
+.admin-field label { font-size: 11px; }
+.admin-field input,
+.admin-field select,
+.admin-field textarea {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-color: #c8dce8;
+  border-radius: 10px;
+  font-size: 13px;
+  color-scheme: light;
+}
+.admin-field input[type="date"],
+.admin-field input[type="time"] {
+  min-height: 46px;
+  color-scheme: light;
+  font-variant-numeric: tabular-nums;
+}
+.admin-field input[type="date"]::-webkit-calendar-picker-indicator,
+.admin-field input[type="time"]::-webkit-calendar-picker-indicator {
+  display: block;
+  width: 20px;
+  height: 20px;
+  opacity: 1;
+  cursor: pointer;
+  filter: none;
+}
+.admin-field input[type="date"]::-webkit-datetime-edit,
+.admin-field input[type="time"]::-webkit-datetime-edit { color: var(--ug-ink); }
+.admin-field input:hover,
+.admin-field select:hover,
+.admin-field textarea:hover { border-color: #86b6cc; }
+.admin-field input:focus,
+.admin-field select:focus,
+.admin-field textarea:focus { border-color: var(--ug-teal); }
+.session-mode,
+.session-mode-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 27px;
+  padding: 5px 9px;
+  border: 1px solid #c5e2ee;
+  border-radius: 999px;
+  background: #eaf5fb;
+  color: #1c5c7a;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.proctor-page .session-overview .session-mode { color: #1c5c7a; }
+@media (max-width: 620px) {
+  .admin-dialog form { padding: 18px; }
+  .admin-form-grid { gap: 11px; }
+}

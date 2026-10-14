@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 520" role="img" aria-label="Logo Tervia">
+  <defs>
+    <clipPath id="terviaShieldClip">
+      <path d="M380 24 560 90v145c0 101-64 175-180 242-116-67-180-141-180-242V90Z"/>
+    </clipPath>
+  </defs>
+  <path d="M380 24 560 90v145c0 101-64 175-180 242-116-67-180-141-180-242V90Z" fill="#D8A332"/>
+  <path d="M380 44 525 102v125c0 85-54 144-145 197-91-53-145-112-145-197V102Z" fill="#0B2F63"/>
+  <path d="M380 62 507 118v110c0 74-49 122-127 170-78-48-127-96-127-170V118Z" fill="none" stroke="#F5F7FB" stroke-width="5"/>
+  <g clip-path="url(#terviaShieldClip)">
+    <path d="M252 124 380 216 508 124v198L380 404 252 322Z" fill="#0B2F63"/>
+    <path d="M252 180 380 270 508 180" fill="none" stroke="#F5F7FB" stroke-width="8" stroke-linecap="round"/>
+    <path d="M252 248 380 336 508 248" fill="none" stroke="#F5F7FB" stroke-width="8" stroke-linecap="round"/>
+    <path d="M380 90v276" fill="none" stroke="#F5F7FB" stroke-width="8" stroke-linecap="round"/>
+    <path d="M238 140 380 230 522 140" fill="none" stroke="#F5F7FB" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
+  </g>
+  <g fill="#E7BA48">
+    <path d="M215 150 249 181l42 8-31 30 8 42-38-21-38 21 8-42-31-30 42-8Z"/>
+    <path d="M545 150 579 181l42 8-31 30 8 42-38-21-38 21 8-42-31-30 42-8Z"/>
+  </g>
+  <path d="M325 160c0-30 22-52 55-52s55 22 55 52c0 44-21 62-55 62s-55-18-55-62Z" fill="#E7BA48"/>
+  <path d="M340 164c0-22 16-38 40-38s40 16 40 38c0 30-18 43-40 43s-40-13-40-43Z" fill="#F8EABB"/>
+  <rect x="348" y="202" width="64" height="16" rx="6" fill="#F3F8FE"/>
+  <path d="M355 214h50l-17 86h-16Z" fill="#F3F8FE"/>
+  <path d="M240 248c70-29 145-30 280 0" fill="none" stroke="#F8FBFF" stroke-width="9" stroke-linecap="round"/>
+  <path d="M278 304c24-12 53-17 102-17 49 0 78 5 102 17v46c-24-12-53-17-102-17-49 0-78 5-102 17Z" fill="none" stroke="#F8FBFF" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M380 300v57M303 315c20-8 41-8 77 0M457 315c-20-8-41-8-77 0" fill="none" stroke="#F8FBFF" stroke-width="5" stroke-linecap="round"/>
+  <text x="380" y="458" text-anchor="middle" font-family="'Plus Jakarta Sans','Segoe UI',sans-serif" font-weight="800" font-size="147" letter-spacing="10" fill="#0B2F63">TERVIA</text>
+  <path d="M180 474h400" stroke="#D9A73B" stroke-width="6" stroke-linecap="round"/>
+</svg>

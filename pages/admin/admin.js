@@ -30,11 +30,22 @@
       ["Total pengawas", state.users.filter((item) => item.role === "proctor").length],
       ["Sesi akan datang", state.examSessions.filter((item) => item.status === "Akan Datang").length],
     ];
-    const shortcuts = [["Buat Ujian", "exams"], ["Kelola Sesi", "sessions"], ["Kelola Peserta", "participants"], ["Kelola Pengawas", "proctors"]];
-    const nextSession = upcoming.length ? upcoming.map(({ session }) => `<div class="upcoming-row"><div><strong>${esc(session.name)} · ${esc(examName(state, session.examId))}</strong><small>${esc(session.date)} · ${esc(session.startTime)}–${esc(session.endTime)} WIB · ${session.mode}</small></div>${statusTag(session.status)}</div>`).join("") : `<div class="empty-admin">Belum ada sesi yang akan datang.</div>`;
+    const features = [
+      ["exams", "▤", "Kelola Ujian", "Buat dan perbarui data dasar ujian.", `${state.exams.length} ujian`],
+      ["sessions", "◷", "Kelola Sesi", "Atur jadwal, mode Daring/Luring, dan status sesi.", `${state.examSessions.length} sesi`],
+      ["participants", "♙", "Kelola Peserta", "Perbarui data peserta dan penempatan sesi.", `${state.participants.length} peserta`],
+      ["proctors", "♧", "Kelola Pengawas", "Kelola akun dan status aktif pengawas.", `${state.users.filter((item) => item.role === "proctor").length} pengawas`],
+      ["assignments", "⇄", "Penugasan Pengawas", "Tugaskan pengawas ke sesi ujian.", `${state.proctorAssignments.length} penugasan`],
+    ];
+    const draftExams = state.exams.filter((item) => item.status === "Draft").length;
+    const activeSessions = state.examSessions.filter((item) => item.status === "Aktif").length;
+    const nextSession = upcoming.length ? upcoming.map(({ session }) => `<div class="upcoming-row"><div><strong>${esc(session.name)} – ${esc(examName(state, session.examId))}</strong><small>${esc(session.date)} – ${esc(session.startTime)}–${esc(session.endTime)} WIB – ${session.mode === "ONSITE" ? "Luring" : "Daring"}</small></div>${statusTag(session.status)}</div>`).join("") : `<div class="empty-admin">Belum ada sesi yang akan datang.</div>`;
     content.innerHTML = `${pageHead("Ringkasan pelaksanaan", "Kelola ujian, jadwal sesi, peserta, dan penugasan pengawas.")}
       <div class="admin-metrics">${metrics.map(([label, value]) => `<article class="admin-metric"><span>${label}</span><strong>${value}</strong></article>`).join("")}</div>
-      <div class="admin-shortcuts">${shortcuts.map(([label, view]) => `<button class="admin-shortcut" data-view="${view}">${label}<span>→</span></button>`).join("")}</div>
+      <div class="admin-features">${features.map(([view, icon, title, desc, count]) => `<button class="admin-feature" data-view="${view}"><span class="admin-feature-icon">${icon}</span><span class="admin-feature-body"><strong>${title}</strong><small>${desc}</small></span><span class="admin-feature-count">${esc(count)}</span></button>`).join("")}
+        <article class="admin-feature is-info"><span class="admin-feature-icon">◫</span><span class="admin-feature-body"><strong>Statistik</strong><small>${draftExams} ujian draft – ${activeSessions} sesi aktif</small></span><span class="admin-feature-count">Live</span></article>
+        <article class="admin-feature is-info"><span class="admin-feature-icon">⚙</span><span class="admin-feature-body"><strong>Maintenance / Sistem</strong><small>Skema data v${window.UjiStore.get().schemaVersion || "-"} – demo dapat dimuat ulang.</small></span><button class="admin-action" data-action="reset-demo">Reset Demo</button></article>
+      </div>
       ${panel("Sesi yang akan datang", "Jadwal berikutnya berdasarkan tanggal dan waktu mulai.", `<div class="upcoming-list">${nextSession}</div>`)}`;
   }
 
@@ -44,7 +55,7 @@
   }
 
   function renderSessions(state) {
-    const rows = state.examSessions.map((session) => `<tr><td><strong>${esc(session.id)}</strong></td><td>${esc(examName(state, session.examId))}</td><td>${esc(session.name)}</td><td>${esc(session.date)}<br><small>${esc(session.startTime)}–${esc(session.endTime)} WIB</small></td><td>${session.mode === "ONSITE" ? "Onsite" : "Remote"}${session.mode === "ONSITE" && session.location ? `<br><small>${esc(session.location)}</small>` : ""}</td><td>${statusTag(session.status)}</td><td>${actions("session", session.id)}</td></tr>`);
+    const rows = state.examSessions.map((session) => `<tr><td><strong>${esc(session.id)}</strong></td><td>${esc(examName(state, session.examId))}</td><td>${esc(session.name)}</td><td>${esc(session.date)}<br><small>${esc(session.startTime)}–${esc(session.endTime)} WIB</small></td><td>${session.mode === "ONSITE" ? "Luring" : "Daring"}${session.mode === "ONSITE" && session.location ? `<br><small>${esc(session.location)}</small>` : ""}</td><td>${statusTag(session.status)}</td><td>${actions("session", session.id)}</td></tr>`);
     content.innerHTML = `${pageHead("Kelola Sesi Ujian", "Waktu mulai dan selesai pada sesi ini menjadi acuan flow peserta.", `<button class="btn btn-primary btn-sm" data-action="add" data-entity="session">+ Tambah Sesi</button>`)}${panel("Daftar sesi", `${state.examSessions.length} sesi`, table(["ID sesi", "Ujian", "Nama sesi", "Jadwal", "Mode / lokasi", "Status", ""], rows, "Belum ada sesi ujian."))}`;
   }
 
@@ -59,14 +70,14 @@
       const toggle = `<button class="admin-action ${proctor.status === "Aktif" ? "danger" : ""}" data-action="toggle-proctor" data-id="${esc(proctor.id)}">${proctor.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"}</button>`;
       return `<tr><td><strong>${esc(proctor.id)}</strong></td><td>${esc(proctor.name)}</td><td>${esc(proctor.email)}</td><td>${statusTag(proctor.status)}</td><td>${actions("proctor", proctor.id, toggle)}</td></tr>`;
     });
-    content.innerHTML = `${pageHead("Kelola Pengawas", "Kelola data akun dan status aktif pengawas.", `<button class="btn btn-primary btn-sm" data-action="add" data-entity="proctor">+ Tambah Pengawas</button>`)}${panel("Daftar pengawas", `${proctors.length} pengawas · kata sandi tidak ditampilkan`, table(["ID pengawas", "Nama", "Email", "Status akun", ""], rows, "Belum ada pengawas."))}`;
+    content.innerHTML = `${pageHead("Kelola Pengawas", "Kelola data akun dan status aktif pengawas.", `<button class="btn btn-primary btn-sm" data-action="add" data-entity="proctor">+ Tambah Pengawas</button>`)}${panel("Daftar pengawas", `${proctors.length} pengawas – kata sandi tidak ditampilkan`, table(["ID pengawas", "Nama", "Email", "Status akun", ""], rows, "Belum ada pengawas."))}`;
   }
 
   function renderAssignments(state) {
     const sessions = state.examSessions;
     const proctors = state.users.filter((item) => item.role === "proctor" && item.status === "Aktif");
-    const form = `<form class="assignment-form" id="assignment-form"><div class="admin-field"><label for="assignment-session">Sesi ujian</label><select id="assignment-session" name="sessionId" required>${sessions.map((item) => `<option value="${esc(item.id)}">${esc(item.name)} · ${esc(examName(state, item.examId))}</option>`).join("")}</select></div><div class="admin-field"><label for="assignment-proctor">Pengawas aktif</label><select id="assignment-proctor" name="proctorId" required>${proctors.map((item) => `<option value="${esc(item.id)}">${esc(item.name)} · ${esc(item.id)}</option>`).join("")}</select></div><button class="btn btn-primary btn-sm" type="submit" ${!sessions.length || !proctors.length ? "disabled" : ""}>Tugaskan</button></form>`;
-    const rows = state.proctorAssignments.map((assignment) => `<tr><td><strong>${esc(assignment.sessionId)}</strong></td><td>${esc(sessionName(state, assignment.sessionId))}</td><td>${esc(proctorName(state, assignment.proctorId))} · ${esc(assignment.proctorId)}</td><td><button class="admin-action danger" data-action="remove-assignment" data-session-id="${esc(assignment.sessionId)}" data-proctor-id="${esc(assignment.proctorId)}">Hapus</button></td></tr>`);
+    const form = `<form class="assignment-form" id="assignment-form"><div class="admin-field"><label for="assignment-session">Sesi ujian</label><select id="assignment-session" name="sessionId" required>${sessions.map((item) => `<option value="${esc(item.id)}">${esc(item.name)} – ${esc(examName(state, item.examId))}</option>`).join("")}</select></div><div class="admin-field"><label for="assignment-proctor">Pengawas aktif</label><select id="assignment-proctor" name="proctorId" required>${proctors.map((item) => `<option value="${esc(item.id)}">${esc(item.name)} – ${esc(item.id)}</option>`).join("")}</select></div><button class="btn btn-primary btn-sm" type="submit" ${!sessions.length || !proctors.length ? "disabled" : ""}>Tugaskan</button></form>`;
+    const rows = state.proctorAssignments.map((assignment) => `<tr><td><strong>${esc(assignment.sessionId)}</strong></td><td>${esc(sessionName(state, assignment.sessionId))}</td><td>${esc(proctorName(state, assignment.proctorId))} – ${esc(assignment.proctorId)}</td><td><button class="admin-action danger" data-action="remove-assignment" data-session-id="${esc(assignment.sessionId)}" data-proctor-id="${esc(assignment.proctorId)}">Hapus</button></td></tr>`);
     content.innerHTML = `${pageHead("Penugasan Pengawas", "Satu sesi dapat memiliki satu atau beberapa pengawas.")}${panel("Tugaskan pengawas ke sesi", "Pilih sesi dan pengawas aktif.", form + table(["ID sesi", "Nama sesi", "Pengawas", ""], rows, "Belum ada penugasan."))}`;
     $("assignment-form")?.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -117,19 +128,19 @@
       fields.push(`<div class="admin-field full"><label for="field-description">Deskripsi singkat</label><textarea id="field-description" name="description">${esc(record?.description || "")}</textarea></div>`);
       fields.push(selectField("status", "Status", ["Draft", "Aktif", "Selesai"].map((value) => `<option ${value === (record?.status || "Draft") ? "selected" : ""}>${value}</option>`).join(""), record?.status));
     } else if (entity === "session") {
-      fields.push(selectField("examId", "Ujian", optionList(state.exams, "id", (item) => `${item.name} · ${item.id}`, record?.examId || state.exams[0]?.id), record?.examId || state.exams[0]?.id));
+      fields.push(selectField("examId", "Ujian", optionList(state.exams, "id", (item) => `${item.name} – ${item.id}`, record?.examId || state.exams[0]?.id), record?.examId || state.exams[0]?.id));
       fields.push(inputField("name", "Nama sesi", record?.name || "Sesi baru"));
       fields.push(inputField("date", "Tanggal (WIB)", record?.date || "2026-10-15", "date"));
       fields.push(inputField("startTime", "Waktu mulai", record?.startTime || "09:00", "time"));
       fields.push(inputField("endTime", "Waktu selesai", record?.endTime || "10:00", "time"));
-      fields.push(selectField("mode", "Mode", `<option value="REMOTE" ${(record?.mode || "REMOTE") === "REMOTE" ? "selected" : ""}>Remote</option><option value="ONSITE" ${record?.mode === "ONSITE" ? "selected" : ""}>Onsite</option>`, record?.mode));
-      fields.push(inputField("location", "Lokasi (untuk onsite)", record?.location || "", "text", "conditional-field full", false));
+      fields.push(selectField("mode", "Mode", `<option value="REMOTE" ${(record?.mode || "REMOTE") === "REMOTE" ? "selected" : ""}>Daring</option><option value="ONSITE" ${record?.mode === "ONSITE" ? "selected" : ""}>Luring</option>`, record?.mode));
+      fields.push(inputField("location", "Lokasi (untuk Luring)", record?.location || "", "text", "conditional-field full", false));
       fields.push(selectField("status", "Status", ["Akan Datang", "Aktif", "Selesai"].map((value) => `<option ${value === (record?.status || "Akan Datang") ? "selected" : ""}>${value}</option>`).join(""), record?.status));
     } else if (entity === "participant") {
       fields.push(inputField("name", "Nama peserta", record?.name || ""));
-      fields.push(selectField("examId", "Ujian", optionList(state.exams, "id", (item) => `${item.name} · ${item.id}`, record?.examId || state.exams[0]?.id), record?.examId || state.exams[0]?.id));
+      fields.push(selectField("examId", "Ujian", optionList(state.exams, "id", (item) => `${item.name} – ${item.id}`, record?.examId || state.exams[0]?.id), record?.examId || state.exams[0]?.id));
       const matchingSessions = state.examSessions.filter((item) => item.examId === (record?.examId || state.exams[0]?.id));
-      fields.push(selectField("sessionId", "Sesi", optionList(matchingSessions, "id", (item) => `${item.name} · ${item.id}`, record?.sessionId || matchingSessions[0]?.id), record?.sessionId || matchingSessions[0]?.id));
+      fields.push(selectField("sessionId", "Sesi", optionList(matchingSessions, "id", (item) => `${item.name} – ${item.id}`, record?.sessionId || matchingSessions[0]?.id), record?.sessionId || matchingSessions[0]?.id));
       fields.push(selectField("status", "Status pendaftaran", ["Terdaftar", "Aktif", "Nonaktif"].map((value) => `<option ${value === (record?.status || "Terdaftar") ? "selected" : ""}>${value}</option>`).join(""), record?.status));
     } else {
       fields.push(inputField("name", "Nama pengawas", record?.name || ""));
@@ -149,7 +160,7 @@
     const select = $("field-sessionId");
     if (!select) return;
     const sessions = state.examSessions.filter((item) => item.examId === examId);
-    select.innerHTML = sessions.map((item) => `<option value="${esc(item.id)}" ${item.id === selectedId ? "selected" : ""}>${esc(item.name)} · ${esc(item.id)}</option>`).join("");
+    select.innerHTML = sessions.map((item) => `<option value="${esc(item.id)}" ${item.id === selectedId ? "selected" : ""}>${esc(item.name)} – ${esc(item.id)}</option>`).join("");
     select.disabled = sessions.length === 0;
     select.required = sessions.length > 0;
   }
@@ -165,6 +176,7 @@
       if (proctor) { UjiAdminStore.save("users", { ...proctor, status: proctor.status === "Aktif" ? "Nonaktif" : "Aktif" }); render(); }
     }
     if (action === "remove-assignment") { UjiAdminStore.removeAssignment(button.dataset.sessionId, button.dataset.proctorId); render(); }
+    if (action === "reset-demo") { window.UjiStore.resetDemo(); render(); window.UjiStore.toast("Data demo dimuat ulang."); }
   });
   content.addEventListener("click", (event) => {
     const nav = event.target.closest("[data-view]");
@@ -188,7 +200,7 @@
         return;
       }
       if (record.mode === "ONSITE" && !record.location.trim()) {
-        window.UjiStore.toast("Isi lokasi untuk sesi Onsite.");
+        window.UjiStore.toast("Isi lokasi untuk sesi Luring.");
         return;
       }
     }
