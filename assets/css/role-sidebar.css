@@ -1,6 +1,6 @@
 :root {
   --role-sidebar-width: 238px;
-  --role-sidebar-background: linear-gradient(180deg, #0a2233 0%, #061826 100%);
+  --role-sidebar-background: linear-gradient(180deg, #246d96 0%, #12364f 100%);
   --role-sidebar-foreground: #eaf4fa;
   --role-sidebar-padding: 20px 14px;
   --role-menu-spacing: 5px;
@@ -62,6 +62,7 @@
 .proctor-nav button {
   display: flex;
   align-items: center;
+  line-height: 1.45;
   gap: 9px;
   width: 100%;
   padding: var(--role-menu-padding);
@@ -74,6 +75,14 @@
   font-size: var(--role-menu-font-size);
   font-weight: 650;
   cursor: pointer;
+}
+
+.proctor-nav button > .nav-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  align-self: center;
 }
 
 .admin-nav button span {
@@ -116,14 +125,12 @@
 }
 
 .admin-avatar {
+  display: block;
   width: var(--role-account-avatar-size);
   height: var(--role-account-avatar-size);
   flex: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #2fa0c6, #1c4e75);
-  color: #fff;
-  font-size: 9px;
-  font-weight: 800;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .admin-sidebar-bottom > span:nth-child(2),
