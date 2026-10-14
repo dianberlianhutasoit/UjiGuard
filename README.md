@@ -1,79 +1,38 @@
-# UjiGuard
+# UjiGuard Prototype
 
-UjiGuard adalah prototipe lokal untuk membantu pengawas ujian CBT luring melihat meja yang perlu diperiksa. Indikasi memberi konteks awal; pengawas tetap memeriksa langsung dan mencatat hasilnya. UjiGuard tidak memutuskan peserta curang.
+Prototype multi-role untuk menyiapkan pelaksanaan ujian. Admin mengelola ujian, jadwal sesi, peserta, akun pengawas, dan penugasan; peserta memakai jadwal sesi yang sama untuk flow persiapan dan sesi ujian.
 
-## Masalah dan pengguna
+## Menjalankan
 
-Dalam ujian luring, pengawas perlu mengetahui meja mana yang membutuhkan perhatian tanpa harus memantau setiap peserta melalui dashboard yang rumit. Pengguna utama prototipe ini adalah pengawas ujian. Halaman station merupakan station demo teknis, bukan layar peserta untuk menampilkan skor atau vonis.
+Jalankan server lokal dengan `npm start` bila Node.js tersedia, lalu buka `http://localhost:8000`. Akses kamera dan mikrofon memerlukan izin browser dan secure context (`localhost` atau HTTPS).
 
-## Scope MVP
+## Akun demo
 
-Satu station demo dapat membuka kamera lokal, satu indikator visual diperiksa, meja terkait ditandai, lalu pengawas mencatat tindak lanjut. Indikator tunggalnya adalah wajah tidak terdeteksi selama lima detik, melalui Face Detection API bawaan browser. Tidak ada video yang direkam atau dikirim. API ini belum tersedia di semua browser. Jika browser tidak mendukungnya, UI menyatakan bahwa deteksi tidak berjalan.
+| Role | ID | Email | Kata sandi |
+|---|---|---|---|
+| Peserta | `PST-001` | — | — |
+| Pengawas | `PGW-001` | `pengawas@ujiguard.demo` | `demo123` |
+| Admin | `ADM-001` | `admin@ujiguard.demo` | `demo123` |
 
-## Fitur yang bekerja
+## Struktur data prototype
 
-- Login demo peran pengawas dan station.
-- Dashboard dengan ringkasan peserta aktif dan status meja normal, perlu dipantau, atau perlu ditinjau.
-- Monitor Ruangan berbentuk peta meja dengan detail peserta, indikasi terakhir, waktu, riwayat, dan status pemeriksaan.
-- Tindakan pengawas: Pantau, Periksa Langsung, Tandai Aman, dan Catat Pelanggaran setelah pemeriksaan langsung.
-- Penyimpanan lokal, filter riwayat, dan ekspor CSV.
-- Deteksi wajah lokal hanya pada browser yang mendukung `FaceDetector`; status dan indikasi disimpan sebagai metadata di `localStorage`.
+- `assets/js/admin-store.js` menyimpan master `users` (akun admin/pengawas), `participants`, `exams`, `examSessions`, dan `proctorAssignments` di localStorage dengan key `ujiguard_admin_master_v1`.
+- `assets/js/store.js` menyimpan state runtime `participantSessions` di store prototype terpisah, bersama data station/event lama. Runtime sesi tidak dicampur ke master admin.
+- `assets/js/demo-users.js` membentuk data lookup login peserta dan staff dari master admin, termasuk nama ujian dan waktu sesi hasil relasi.
+- `assets/js/auth.js` menjalankan lookup ID, konfirmasi identitas peserta, dan login staff.
 
-## Simulasi dan roadmap
+## Flow yang tersedia
 
-Data stasiun awal adalah data demo. Peran login dikelola di frontend. Data station dan indikasi tersimpan di `localStorage`, sehingga perubahan hanya berbagi pada origin/browser yang sama; tidak ada sinkronisasi lintas perangkat. Roadmap: backend dengan kontrol akses yang sesuai, dukungan deteksi yang teruji pada perangkat sasaran, kebijakan retensi metadata, dan pengujian aksesibilitas serta akurasi. Roadmap belum diimplementasikan.
+- Login satu pintu menentukan role berdasarkan ID. Peserta mengonfirmasi identitas; admin/pengawas memakai email dan kata sandi.
+- Admin memiliki menu Dashboard, Ujian, Sesi Ujian, Peserta, Pengawas, dan Penugasan. Data tersimpan lokal untuk prototype.
+- Dashboard Pengawas membaca hanya sesi yang ditugaskan melalui `proctorAssignments`, lalu menampilkan katalog peserta, indikator, tindakan human review, dan riwayat pemeriksaan.
+- Skenario indikator PST-003 / Dewi Anggraini diberi label Data Simulasi dan tidak berasal dari AI atau kamera.
+- Station Demo A-01 dapat menyiarkan kamera peserta melalui WebRTC saat sesi peserta aktif dan signaling server demo berjalan. Pengawas tidak memakai kameranya sendiri. Kamera station simulasi tidak tersedia.
+- Waktu sesi disimpan sebagai tanggal serta jam WIB. Peserta melihat waktu mulai/selesai dan hitung mundur. Saat waktu akhir tercapai, store menandai sesi `SELESAI`, menyimpan `leftAt`/`endedAt`, menghentikan media tracks, lalu membuka halaman Ujian Selesai.
+- Keluar sebelum waktu akhir meminta konfirmasi, menghentikan media, dan menandai `Keluar Sebelum Selesai` dengan `leftAt`.
 
-Tidak termasuk MVP: hand-to-ear, RF detection, gaze tracking, face recognition, klasifikasi audio, multi-camera, berbagai CCTV, atau skor/probabilitas kecurangan.
+## Catatan prototype
 
-## Menjalankan lokal
+Kamera dan mikrofon dipertahankan halaman peserta; Station Demo A-01 dapat mengirim stream WebRTC tanpa merekam. Signaling dan presence berjalan di memori server demo, memakai STUN publik tanpa TURN, sehingga koneksi lintas jaringan tidak dijamin stabil. Runtime store serta master/assignment Admin masih lokal per browser/origin; signaling presence hanya menyediakan status kamera/session ringan untuk demo lintas perangkat. Browser dapat menurunkan prioritas atau menangguhkan tab; timer peserta akan mengejar waktu akhir saat halaman berjalan kembali, tetapi prototype tidak menjamin monitoring terus berlangsung ketika tab ditangguhkan atau browser ditutup.
 
-1. Ekstrak folder project dan buka terminal di folder `UjiGuard_Submission`.
-2. Pastikan Python 3 tersedia.
-3. Jalankan server statis:
-   - Windows: `py -m http.server 8000`
-   - macOS/Linux: `python3 -m http.server 8000`
-4. Buka `http://localhost:8000`.
-5. Login menggunakan salah satu akun demo:
-
-| Peran | Email | Kata sandi |
-|---|---|---|
-| Pengawas | `pengawas@ujiguard.demo` | `UjiGuard2026!` |
-| Station demo | `station@ujiguard.demo` | `UjiGuard2026!` |
-
-Kamera memerlukan izin browser dan secure context (localhost dapat digunakan). Untuk indikator otomatis, browser harus menyediakan Face Detection API eksperimental `FaceDetector`.
-
-## Mencoba skenario utama
-
-1. Login sebagai panitia station demo, buka Monitor Ruangan, pilih **Buka Station Demo**, lalu aktifkan webcam pada tab station.
-2. Jika browser mendukung Face Detection API, arahkan kamera ke wajah lalu tutupi/keluarkan wajah dari bingkai selama lebih dari lima detik.
-3. Di tab pengawas, mulai monitoring setelah status Station Demo terhubung. Jalankan **Skenario Indikasi** untuk mencoba alur tinjauan tanpa bergantung pada dukungan deteksi browser.
-4. Pilih **Periksa Langsung**, kemudian **Tandai Aman** atau **Catat Pelanggaran** setelah pemeriksaan demo.
-5. Periksa hasilnya di **Riwayat Pemeriksaan**.
-
-Jika Face Detection API tidak didukung, alur pendeteksian tidak dapat dicoba pada browser tersebut; halaman memberi tahu bahwa deteksi tidak berjalan. Jangan gunakan tombol atau data demo sebagai bukti kejadian nyata.
-
-## Struktur folder
-
-- `index.html`: pengarah ke login.
-- `pages/login/`: login demo.
-- `pages/proctor/`: dashboard, Perlu Diperiksa/Riwayat Pemeriksaan, sesi, dan Monitor Ruangan.
-- `pages/student/`: station demo dengan kamera lokal dan indikator terbatas.
-- `assets/css/`: token tema; `assets/js/store.js`: data demo dan penyimpanan lokal; `assets/js/nav.js`: navigasi/profil.
-- `docs/`: concept paper dan tutorial yang menyertai project.
-
-## Keterbatasan
-
-- Login hanya validasi frontend dan bukan autentikasi aman.
-- Tidak ada backend, database, streaming, atau sinkronisasi antarperangkat.
-- Face Detection API tidak tersedia secara konsisten. Deteksi dapat keliru karena pencahayaan, posisi, dan dukungan browser; kejadian perlu diperiksa pengawas.
-- Hanya metadata kejadian yang disimpan; tidak ada snapshot atau video.
-- Status station awal merupakan data contoh, bukan perangkat yang terhubung sungguhan.
-- Sistem tidak menentukan kecurangan dan tidak menggantikan prosedur ujian.
-
-## Troubleshooting
-
-- **Halaman kosong / kamera tak bisa diakses:** jalankan server dari folder root dan buka `http://localhost:8000`; akses melalui `file://` dapat menghalangi kamera.
-- **Browser meminta izin kamera:** pilih Izinkan dan pastikan kamera tidak sedang dipakai aplikasi lain.
-- **Deteksi tidak tersedia:** browser belum menyediakan `FaceDetector`; skenario otomatis tidak berjalan pada browser itu.
-- **Perubahan tidak muncul antar tab:** gunakan origin dan profil browser yang sama, lalu muat ulang halaman.
-- **Data demo lama:** hapus data situs/local storage untuk `localhost:8000`, lalu muat ulang.
+Halaman lama di `pages/student/`, halaman proctor lama selain placeholder, `assets/js/webrtc.js`, dan signaling `server.js` tetap disimpan sebagai referensi prototype terdahulu. Flow baru tidak memanggil fitur tersebut. Data station/event lama di store juga dipertahankan agar alur demo sebelumnya tidak terhapus.

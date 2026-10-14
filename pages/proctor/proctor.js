@@ -74,7 +74,7 @@
       if (latest.status !== "onsite") { UjiStore.toast("Pilih Periksa Langsung sebelum mencatat pelanggaran."); return; }
       UjiStore.updateEvent(selectedId, { status: "resolved", note: "Pelanggaran dicatat setelah pemeriksaan langsung.", reviewedBy: user.name, violation: true });
       UjiStore.toast("Hasil pemeriksaan dicatat di riwayat.");
-    };
+    });
   }
   function change(status, note) { UjiStore.updateEvent(selectedId, { status, note, reviewedBy: user.name }); UjiStore.toast("Status diperbarui: " + statusText[status]); }
   function renderStations() {

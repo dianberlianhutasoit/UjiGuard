@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Persiapan Ujian | UjiGuard</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../role-placeholder.css">
+    <link rel="stylesheet" href="participant.css">
+  </head>
+  <body class="role-page participant-page">
+    <main class="role-shell participant-shell">
+      <header class="role-topbar">
+        <div class="role-brand"><span class="role-brand-mark">U</span><strong>UjiGuard</strong></div>
+        <div class="role-user"><span id="header-name"></span><small>Peserta · <span id="header-id"></span></small></div>
+        <button class="btn btn-light btn-sm" id="logout-button" type="button">Keluar</button>
+      </header>
+
+      <section class="participant-stage" id="device-stage">
+        <div class="stage-heading"><div class="eyebrow">LANGKAH 2 DARI 3</div><h1>Pemeriksaan Perangkat</h1><p>Izinkan akses kamera dan mikrofon untuk memastikan perangkat siap digunakan.</p></div>
+        <div class="device-layout">
+          <article class="role-card device-card">
+            <div class="device-status-row"><div><span class="device-icon">◉</span><div><strong>Kamera</strong><small>Untuk persiapan ujian</small></div></div><span class="status-pill" id="camera-status">Belum Aktif</span></div>
+            <div class="camera-preview" id="camera-preview-wrap"><video id="camera-preview" autoplay muted playsinline></video><div class="preview-empty" id="preview-empty">Preview kamera akan tampil setelah izin diberikan.</div></div>
+            <div class="device-status-row"><div><span class="device-icon">◖</span><div><strong>Mikrofon</strong><small>Izin audio browser</small></div></div><span class="status-pill" id="microphone-status">Belum Aktif</span></div>
+            <div class="device-status-row"><div><span class="device-icon">⌁</span><div><strong>Koneksi / monitoring</strong><small>Status halaman dan koneksi</small></div></div><span class="status-pill" id="connection-status">Belum Aktif</span></div>
+            <div class="device-error hide" id="device-error" role="alert"></div>
+            <button class="btn btn-light device-check-button" id="check-devices" type="button">Periksa Kamera &amp; Mikrofon</button>
+            <button class="btn btn-primary device-enter-button" id="enter-exam" type="button" disabled>Masuk Ujian</button>
+          </article>
+          <aside class="role-card exam-summary">
+            <div class="eyebrow">DATA UJIAN</div><h2 id="summary-exam"></h2>
+            <dl><div><dt>Peserta</dt><dd id="summary-name"></dd></div><div><dt>ID peserta</dt><dd id="summary-id"></dd></div><div><dt>Sesi</dt><dd id="summary-session"></dd></div><div><dt>Waktu sesi</dt><dd id="summary-time"></dd></div><div><dt>Mode</dt><dd id="summary-mode"></dd></div></dl>
+            <p class="summary-note">Preview kamera hanya digunakan pada tahap persiapan.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="participant-stage hide" id="exam-stage">
+        <div class="stage-heading"><div class="eyebrow">LANGKAH 3 DARI 3</div><h1>Sesi Ujian</h1><p>Perangkat tetap aktif pada halaman ini selama sesi berlangsung.</p></div>
+        <article class="role-card active-exam-card">
+          <div class="monitoring-banner"><span class="monitoring-dot"></span><div><strong id="active-monitoring-status">Monitoring Aktif</strong><small>Kamera dan mikrofon aktif pada halaman peserta sejak <span id="active-joined-at"></span>.</small></div></div>
+          <div class="active-exam-title"><div class="eyebrow">UJIAN BERLANGSUNG</div><h2 id="active-exam-name"></h2></div>
+          <dl class="active-exam-details"><div><dt>Nama peserta</dt><dd id="active-name"></dd></div><div><dt>ID peserta</dt><dd id="active-id"></dd></div><div><dt>Sesi</dt><dd id="active-session"></dd></div><div><dt>Waktu sesi</dt><dd id="active-time"></dd></div><div><dt>Waktu mulai</dt><dd id="active-start-time"></dd></div><div><dt>Waktu selesai</dt><dd id="active-end-time"></dd></div><div><dt>Mode</dt><dd id="active-mode"></dd></div></dl>
+          <div class="session-countdown"><span>Waktu tersisa</span><strong id="session-countdown">--:--:--</strong></div>
+          <div class="active-device-status"><span>Kamera <b id="active-camera-status">Aktif</b></span><span>Mikrofon <b id="active-microphone-status">Aktif</b></span><span>Koneksi <b id="active-connection-status">Aktif</b></span></div>
+          <button class="btn btn-light leave-exam-button" id="leave-exam" type="button">Keluar dari Ujian</button>
+        </article>
+      </section>
+      <footer class="role-footer">UjiGuard · Sistem Pendukung Pengawasan Ujian</footer>
+    </main>
+    <video id="active-camera-source" class="media-source" autoplay muted playsinline aria-hidden="true"></video>
+    <audio id="active-microphone-source" class="media-source" autoplay muted aria-hidden="true"></audio>
+    <script src="../../assets/js/admin-store.js"></script>
+    <script src="../../assets/js/demo-users.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/store.js"></script>
+    <script src="../../assets/js/webrtc.js"></script>
+    <script src="participant.js"></script>
+  </body>
+</html>

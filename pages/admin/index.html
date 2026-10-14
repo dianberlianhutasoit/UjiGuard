@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Admin UjiGuard</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../role-placeholder.css">
+    <link rel="stylesheet" href="admin.css">
+  </head>
+  <body class="admin-page">
+    <div class="admin-shell">
+      <aside class="admin-sidebar">
+        <a class="admin-logo" href="index.html"><span class="role-brand-mark">U</span><span><strong>UjiGuard</strong><small>ADMINISTRASI UJIAN</small></span></a>
+        <div class="admin-nav-label">MENU UTAMA</div>
+        <nav class="admin-nav" aria-label="Navigasi admin">
+          <button data-view="dashboard" class="is-active"><span>⌂</span>Dashboard</button>
+          <button data-view="exams"><span>▤</span>Ujian</button>
+          <button data-view="sessions"><span>◷</span>Sesi Ujian</button>
+          <button data-view="participants"><span>♙</span>Peserta</button>
+          <button data-view="proctors"><span>♧</span>Pengawas</button>
+          <button data-view="assignments"><span>⇄</span>Penugasan</button>
+        </nav>
+        <div class="admin-sidebar-bottom"><span class="admin-avatar">AU</span><span><strong data-admin-name>Admin</strong><small>Administrator</small></span><button id="admin-logout" aria-label="Keluar">↗</button></div>
+      </aside>
+      <main class="admin-main">
+        <header class="admin-topbar"><div><div class="eyebrow">PORTAL ADMIN</div><h1 id="admin-page-title">Dashboard Admin</h1></div><div class="admin-top-user"><span data-admin-name></span><small>Administrator</small></div></header>
+        <section id="admin-content" class="admin-content" aria-live="polite"></section>
+      </main>
+    </div>
+    <dialog class="admin-dialog" id="record-dialog">
+      <form id="record-form">
+        <div class="dialog-heading"><div><div class="eyebrow" id="dialog-eyebrow">DATA</div><h2 id="dialog-title">Tambah data</h2></div><button type="button" id="close-dialog" class="dialog-close" aria-label="Tutup">×</button></div>
+        <div id="dialog-fields" class="dialog-fields"></div>
+        <div class="dialog-actions"><button type="button" class="btn btn-light" id="cancel-dialog">Batal</button><button type="submit" class="btn btn-primary">Simpan</button></div>
+      </form>
+    </dialog>
+    <script src="../../assets/js/admin-store.js"></script>
+    <script src="../../assets/js/demo-users.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/store.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

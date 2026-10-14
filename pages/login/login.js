@@ -1,51 +1,62 @@
 (function () {
-  const form = document.getElementById("login-form"),
-    email = document.getElementById("email"),
-    password = document.getElementById("password"),
-    error = document.getElementById("login-error");
-  const accounts = {
-    "pengawas@ujiguard.demo": {
-      password: "UjiGuard2026!",
-      role: "proctor",
-      name: "Alya Prameswari",
-      target: "../proctor/dashboard.html",
-    },
-    "station@ujiguard.demo": {
-      password: "UjiGuard2026!",
-      role: "proctor",
-      name: "Panitia Demo",
-      target: "../student/exam.html?station-demo=1",
-    },
+  "use strict";
+  const idForm = document.getElementById("id-form");
+  const staffForm = document.getElementById("staff-form");
+  const idInput = document.getElementById("user-id");
+  const staffIdLabel = document.getElementById("staff-id-label");
+  const idError = document.getElementById("id-error");
+  const staffError = document.getElementById("staff-error");
+  const password = document.getElementById("staff-password");
+  let selectedUser = null;
+  const destinations = {
+    participant: "../participant/identity.html",
+    proctor: "../proctor/index.html",
+    admin: "../admin/index.html",
   };
-  document.querySelectorAll("[data-fill]").forEach((b) =>
-    b.addEventListener("click", () => {
-      email.value =
-        b.dataset.fill === "proctor"
-          ? "pengawas@ujiguard.demo"
-          : "station@ujiguard.demo";
-      password.value = "UjiGuard2026!";
-      error.classList.add("hide");
-    }),
-  );
+
+  idForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    idError.classList.add("hide");
+    selectedUser = window.UjiAuth.findById(idInput.value);
+    if (!selectedUser) {
+      idError.textContent = "ID tidak ditemukan. Periksa kembali ID demo.";
+      idError.classList.remove("hide");
+      return;
+    }
+    if (selectedUser.role === "participant") {
+      window.UjiAuth.setPendingId(selectedUser.id);
+      location.href = destinations.participant;
+      return;
+    }
+    staffIdLabel.textContent = selectedUser.id;
+    idForm.classList.add("hide");
+    staffForm.classList.remove("hide");
+    staffError.classList.add("hide");
+    document.getElementById("staff-email").focus();
+  });
+
+  document.getElementById("back-to-id").addEventListener("click", () => {
+    selectedUser = null;
+    staffForm.reset();
+    staffForm.classList.add("hide");
+    idForm.classList.remove("hide");
+    idInput.focus();
+  });
+
   document.getElementById("toggle-password").addEventListener("click", () => {
     password.type = password.type === "password" ? "text" : "password";
   });
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const em = email.value.trim().toLowerCase(),
-      acct = accounts[em];
-    if (!acct || acct.password !== password.value) {
-      error.textContent =
-        "Email atau kata sandi demo tidak cocok. Gunakan salah satu akun demo yang tersedia.";
-      error.classList.remove("hide");
+
+  staffForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    staffError.classList.add("hide");
+    const email = document.getElementById("staff-email").value.trim().toLowerCase();
+    if (!selectedUser || !["proctor", "admin"].includes(selectedUser.role) || email !== selectedUser.email || password.value !== selectedUser.password) {
+      staffError.textContent = "Email atau kata sandi tidak sesuai dengan ID tersebut.";
+      staffError.classList.remove("hide");
       return;
     }
-    window.UjiStore.setUser({
-      email: em,
-      role: acct.role,
-      name: acct.name,
-      loginAt: Date.now(),
-    });
-    location.href = acct.target;
+    const user = window.UjiAuth.signIn(selectedUser.id);
+    if (user) location.href = destinations[user.role];
   });
 })();

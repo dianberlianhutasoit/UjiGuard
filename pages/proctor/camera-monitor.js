@@ -8,6 +8,12 @@
   const cameraLabel = (s) => s.stationType === "simulation" ? "Tidak terhubung" : s.cameraStatus;
   const eventStatus = { new: "Perlu Ditinjau", review: "Sedang Dipantau", onsite: "Dalam Pemeriksaan", resolved: "Selesai" };
   let selectedId = null;
+  let cameraViewStationId = null;
+  let rtcClient = null;
+  let cameraRemoteStream = null;
+  let cameraStreamStatus = "closed";
+  let cameraStreamError = "";
+  let remoteCameraReady = false;
   function render() {
     const data = UjiStore.get();
     const stations = data.sessions.slice().sort((a, b) => a.desk.localeCompare(b.desk));
@@ -37,7 +43,14 @@
     }).join("");
     $("camera-empty").classList.toggle("hide", visibleStations.length > 0);
     $("camera-result-count").textContent = query ? `${visibleStations.length} dari ${stations.length} station` : `${stations.length} station - 1 Station Demo, ${simulations.length} data simulasi`;
-    document.querySelectorAll("[data-desk]").forEach((button) => button.addEventListener("click", () => { selectedId = button.dataset.desk; render(); detail(selectedId); }));
+    document.querySelectorAll("[data-desk]").forEach((button) => button.addEventListener("click", () => {
+      const nextId = button.dataset.desk;
+      if (cameraViewStationId && nextId !== cameraViewStationId) {
+        const activeRtc = rtcClient; rtcClient = null; cameraViewStationId = null; cameraRemoteStream = null; cameraStreamStatus = "closed"; cameraStreamError = "";
+        activeRtc?.close();
+      }
+      selectedId = nextId; render(); detail(selectedId);
+    }));
     if (selectedId) detail(selectedId);
   }
   function detail(id) {
@@ -51,10 +64,41 @@
     const kind = s.stationType === "real-demo" ? "Station Demo" : "Data Simulasi";
     const pending = events.find((event) => event.status !== "resolved");
     const recentCount = events.filter((event) => Date.now() - event.time <= 300000).length;
-    const repeatNote = status === "Perlu Ditinjau" && recentCount > 1 ? `<p class="notice-band">${recentCount} indikator dalam 5 menit pada station ini.</p>` : "";
+    const repeatNote = recentCount > 0 ? `<span class="detail-count">${recentCount} indikator dalam 5 menit</span>` : "";
     const actions = !pending ? "" : pending.status === "new" || pending.status === "review" ? `<button class="btn btn-light" data-act="review">Lanjut Pantau</button><button class="btn btn-primary" data-act="onsite">Periksa Langsung</button>` : `<button class="btn btn-light" data-act="resolved">Tandai Aman</button><button class="btn btn-danger" data-act="violation">Catat Pelanggaran</button>`;
     const inspectionStatus = pending ? eventStatus[pending.status] : last ? "Selesai" : "Belum ada pemeriksaan";
-    $("camera-detail-panel").innerHTML = `<div class="card-pad"><div class="eyebrow">DETAIL STATION</div><h2>Nomor Meja ${esc(s.desk)}</h2><p>Nomor Peserta ${esc(s.participantNo)} - ${esc(s.name)}</p><p><b>Jenis station:</b> ${kind}</p><p><b>Status kamera:</b> ${cameraLabel(s)}</p><p><b>Status monitoring:</b> ${s.monitoringStatus}</p><p><b>Status perhatian:</b> ${status}</p><p><b>Indikator terakhir:</b> ${last ? esc(last.title) : "Belum ada indikator"}</p>${repeatNote}<p><b>Sumber:</b> ${last ? esc(last.label || last.source || "Deteksi lokal") : "-"}</p><p><b>Alasan:</b> ${last ? esc(last.detail) : "Belum ada indikasi."}</p><p><b>Waktu kejadian:</b> ${last ? esc(UjiStore.fmtLong(last.time)) : "-"}</p><p><b>Status pemeriksaan:</b> ${inspectionStatus}</p><h3>Riwayat indikator</h3>${events.length ? events.map((event) => `<p>${esc(UjiStore.fmtLong(event.time))} - ${esc(event.label || event.source || "Deteksi lokal")} - ${esc(event.title)} - ${eventStatus[event.status] || event.status}${event.note ? ` - ${esc(event.note)}` : ""}</p>`).join("") : "<p>Belum ada riwayat pemeriksaan.</p>"}<div class="camera-action-stack">${actions}</div><p class="muted">Data Simulasi bukan deteksi nyata. Semua keputusan pemeriksaan tetap pada pengawas.</p></div>`;
+    const cameraUnavailable = s.stationType === "simulation";
+    const cameraReady = connected(s) || (s.desk === "A-01" && remoteCameraReady);
+    const canViewCamera = !cameraUnavailable && s.desk === "A-01" && cameraReady;
+    const cameraMessage = cameraUnavailable ? "Kamera tidak tersedia pada station simulasi" : canViewCamera ? "Kamera Demo terhubung" : cameraLabel(s);
+    const cameraOpen = cameraViewStationId === id;
+    const reviewMeta = last?.reviewedBy ? `<small class="detail-human-review">Ditinjau oleh ${esc(last.reviewedBy)}</small>` : "";
+    $("camera-detail-panel").innerHTML = `<div class="card-pad detail-card-pad">
+      <header class="detail-heading"><div><div class="eyebrow">DETAIL STATION</div><h2>Meja ${esc(s.desk)}</h2></div><span class="station-kind">${kind}</span></header>
+      <section class="detail-section participant-section"><strong class="detail-name">${esc(s.name)}</strong><span>Nomor Peserta ${esc(s.participantNo)}</span></section>
+      <section class="detail-section"><h3>Status station</h3><div class="detail-status-grid"><div><span>Kamera</span><b>${esc(cameraReady ? "Kamera Aktif" : cameraLabel(s))}</b></div><div><span>Monitoring</span><b>${esc(s.monitoringStatus)}</b></div><div><span>Perhatian</span><b class="attention-${status === "Normal" ? "normal" : "review"}">${esc(status)}</b></div></div></section>
+      <section class="detail-section latest-indicator"><h3>Indikator terakhir</h3>${last ? `<strong>${esc(last.title)}</strong><div class="detail-indicator-meta"><span>${esc(UjiStore.fmtLong(last.time))}</span><span>Sumber: ${esc(last.label || last.source || "Deteksi lokal")}</span></div>${last.detail ? `<p>${esc(last.detail)}</p>` : ""}${reviewMeta}${repeatNote}` : `<p class="muted">Belum ada indikator untuk station ini.</p>`}</section>
+      <section class="detail-section"><h3>Riwayat indikator <span>${events.length}</span></h3>${events.length ? `<ol class="indicator-timeline">${events.map((event) => `<li><time>${esc(UjiStore.fmt(event.time))}</time><div><strong>${esc(event.title)}</strong><small>${esc(event.label || event.source || "Deteksi lokal")} · ${eventStatus[event.status] || esc(event.status)}</small>${event.note ? `<small class="detail-human-review">Human review: ${esc(event.note)}${event.reviewedBy ? ` — ${esc(event.reviewedBy)}` : ""}</small>` : ""}</div></li>`).join("")}</ol>` : `<p class="muted">Belum ada riwayat pemeriksaan.</p>`}</section>
+      <section class="detail-section camera-detail-section"><div class="detail-section-title"><h3>Kamera</h3><span class="camera-status-indicator ${canViewCamera ? "is-connected" : ""}">${esc(cameraMessage)}</span></div>${cameraOpen ? `<div class="station-live-frame"><div class="station-live-heading"><span class="live-badge ${cameraStreamStatus === "live" ? "is-live" : ""}">${cameraStreamStatus === "live" ? "LIVE" : cameraStreamStatus === "connecting" ? "MENGHUBUNGKAN" : cameraStreamStatus === "error" ? "TERPUTUS" : "KAMERA"}</span><strong>Meja ${esc(s.desk)} · ${esc(s.name)}</strong></div><video id="station-live-video" autoplay playsinline muted aria-label="Live kamera station ${esc(s.desk)}"></video>${cameraStreamStatus !== "live" ? `<div class="station-live-message" role="status">${esc(cameraStreamError || (cameraStreamStatus === "error" ? "Stream tidak dapat dihubungkan." : "Menunggu stream dari Station Demo A-01…"))}</div>` : ""}</div><button class="btn btn-light btn-sm" id="close-station-camera">Tutup Kamera</button>` : `<button class="btn btn-light btn-sm" id="view-station-camera" ${canViewCamera ? "" : "disabled"}>Lihat Kamera</button>`}</section>
+      <section class="detail-section supervisor-actions"><h3>Tindakan pengawas</h3><p class="detail-inspection-status">Status pemeriksaan: <b>${inspectionStatus}</b></p><div class="camera-action-stack">${actions || `<span class="muted">Tidak ada tindakan pemeriksaan yang menunggu.</span>`}</div></section>
+      ${cameraUnavailable ? `<p class="muted detail-footnote">Data simulasi tidak memiliki kamera nyata. Semua keputusan pemeriksaan tetap pada pengawas.</p>` : ""}</div>`;
+    const liveVideo = $("station-live-video");
+    if (liveVideo && cameraRemoteStream) { liveVideo.srcObject = cameraRemoteStream; liveVideo.play().catch(() => {}); }
+    $("view-station-camera")?.addEventListener("click", () => {
+      if (s.desk !== "A-01" || s.stationType !== "real-demo" || !(connected(s) || remoteCameraReady) || !window.UjiRtc) return;
+      cameraViewStationId = id; cameraStreamStatus = "connecting"; cameraStreamError = ""; detail(id);
+      rtcClient = UjiRtc.startProctor($("station-live-video"), (state, message, stream) => {
+        cameraStreamStatus = state; cameraStreamError = message || "";
+        if (state === "live") cameraRemoteStream = stream;
+        if (state === "closed" || state === "error") cameraRemoteStream = null;
+        detail(id);
+      });
+      rtcClient.connect();
+    });
+    $("close-station-camera")?.addEventListener("click", () => {
+      const activeRtc = rtcClient; rtcClient = null; cameraViewStationId = null; cameraRemoteStream = null; cameraStreamStatus = "closed"; cameraStreamError = "";
+      activeRtc?.close(); detail(id);
+    });
     document.querySelectorAll("[data-act]").forEach((button) => button.addEventListener("click", () => {
       const latest = UjiStore.get().events.find((event) => event.sessionId === id && event.status !== "resolved");
       if (!latest) { UjiStore.toast("Belum ada indikasi aktif untuk diperbarui."); return; }
@@ -79,5 +123,15 @@
   window.addEventListener("ujiguard:updated", render);
   window.addEventListener("pageshow", render);
   window.setInterval(render, 3000);
+  const refreshCameraPresence = async () => {
+    if (!window.UjiRtc) return;
+    try {
+      const status = await UjiRtc.getStationPresence();
+      const next = !!status.online;
+      if (next !== remoteCameraReady) { remoteCameraReady = next; render(); }
+    } catch (_) {}
+  };
+  refreshCameraPresence();
+  window.setInterval(refreshCameraPresence, 2500);
   render();
 })();

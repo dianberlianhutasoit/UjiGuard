@@ -1,7 +1,7 @@
 ﻿(function () {
   "use strict";
   const KEY = "ujiguard_demo_v2";
-  const SCHEMA = 3;
+  const SCHEMA = 5;
   const seed = [
     { id: "UG-2401", participantNo: "26-001", name: "Nadia Putri", email: "nadia@student.demo", desk: "A-01", stationType: "real-demo", status: "idle", started: Date.now(), device: "Kamera belum aktif" },
     { id: "UG-2402", participantNo: "26-002", name: "Rafi Pratama", email: "rafi@student.demo", desk: "A-02", stationType: "simulation", status: "active", started: Date.now(), device: "Data Simulasi" },
@@ -10,7 +10,7 @@
     { id: "UG-2405", participantNo: "26-005", name: "Salsa Maharani", email: "salsa@student.demo", desk: "A-05", stationType: "simulation", status: "idle", started: Date.now(), device: "Data Simulasi" },
     { id: "UG-2406", participantNo: "26-006", name: "Farhan Akbar", email: "farhan@student.demo", desk: "A-06", stationType: "simulation", status: "active", started: Date.now(), device: "Data Simulasi" },
   ];
-  function fresh() { return { schemaVersion: SCHEMA, sessions: seed.map((s) => ({ ...s })), events: [], lastEvent: 1048, monitoring: { active: false, startedAt: null } }; }
+  function fresh() { return { schemaVersion: SCHEMA, sessions: seed.map((s) => ({ ...s })), events: [], reviewHistory: [], participantSessions: [], lastEvent: 1048, monitoring: { active: false, startedAt: null } }; }
   function cameraConnected(s) { return s.stationType === "real-demo" && s.device === "Kamera lokal aktif" && Date.now() - (s.cameraHeartbeat || 0) < 10000; }
   function reconcile(x) {
     const old = Array.isArray(x.sessions) ? x.sessions : [];
@@ -22,6 +22,8 @@
       return s;
     });
     x.events = Array.isArray(x.events) ? x.events : [];
+    x.reviewHistory = Array.isArray(x.reviewHistory) ? x.reviewHistory : [];
+    x.participantSessions = Array.isArray(x.participantSessions) ? x.participantSessions : [];
     x.monitoring = x.monitoring || { active: false, startedAt: null };
     if (x.monitoring.active && !x.sessions.some(cameraConnected)) x.monitoring = { active: false, startedAt: null };
     for (const event of x.events) {
@@ -62,7 +64,7 @@
     x.events.unshift(ev); write(x); return ev;
   }
   function runDemoScenario() {
-    return addEvent({ sessionId: "UG-2403", student: "Dewi Anggraini", participantNo: "26-003", desk: "A-03", type: "visual", title: "Wajah tidak terdeteksi selama 6 detik", detail: "Skenario demo untuk memperlihatkan alur tinjauan. Ini data simulasi, bukan hasil deteksi kamera atau AI.", source: "Simulasi Demo", label: "Data Simulasi", isSimulation: true, priority: "medium" });
+    return addEvent({ sessionId: "UG-2403", examSessionId: "SESSION-01", participantId: "PST-003", student: "Dewi Anggraini", participantNo: "26-003", desk: "A-03", type: "visual", title: "Wajah tidak terdeteksi selama 6 detik", detail: "Skenario demo untuk memperlihatkan alur tinjauan. Ini data simulasi, bukan hasil deteksi kamera atau AI.", source: "Visual / Simulasi", label: "Data Simulasi", isSimulation: true, priority: "medium" });
   }
   function resetDemo() {
     const x = fresh(); write(x);
@@ -72,6 +74,17 @@
   function updateEvent(id, changes) {
     const x = get(); const e = x.events.find((item) => item.id === id); if (!e) return null;
     Object.assign(e, changes, { updatedAt: Date.now() }); write(x); return e;
+  }
+  function reviewEvent(id, status, reviewer, action, note = "") {
+    const x = get();
+    const event = x.events.find((item) => item.id === id);
+    if (!event) return null;
+    const fromStatus = event.status;
+    const time = Date.now();
+    Object.assign(event, { status, note, reviewedBy: reviewer, updatedAt: time });
+    x.reviewHistory.unshift({ id: `RV-${time}-${id}`, eventId: id, participantId: event.participantId || null, sessionId: event.examSessionId || null, action, fromStatus, toStatus: status, reviewer, note, time });
+    write(x);
+    return event;
   }
   function upsertSession(s) { return updateSession(s.id, s) || s; }
   function updateSession(id, changes) {
@@ -84,6 +97,27 @@
     x.monitoring = { active: !!active, startedAt: active ? (x.monitoring?.startedAt || Date.now()) : null };
     write(x); return x.monitoring;
   }
+  function saveParticipantSession(record) {
+    if (!record?.participantId || !record?.sessionId) return null;
+    const x = get();
+    const index = x.participantSessions.findIndex((item) => item.participantId === record.participantId);
+    const saved = { ...record };
+    if (index >= 0) x.participantSessions[index] = saved;
+    else x.participantSessions.unshift(saved);
+    write(x);
+    return saved;
+  }
+  function getParticipantSession(participantId) {
+    return get().participantSessions.find((item) => item.participantId === participantId) || null;
+  }
+  function updateParticipantSession(participantId, changes) {
+    const x = get();
+    const record = x.participantSessions.find((item) => item.participantId === participantId);
+    if (!record) return null;
+    Object.assign(record, changes, { updatedAt: Date.now() });
+    write(x);
+    return record;
+  }
   function currentUser() { try { return JSON.parse(sessionStorage.getItem("ujiguard_user") || "null"); } catch (_) { return null; } }
   function setUser(u) { sessionStorage.setItem("ujiguard_user", JSON.stringify(u)); }
   function logout() { sessionStorage.removeItem("ujiguard_user"); location.href = "../../pages/login/index.html"; }
@@ -93,5 +127,5 @@
   function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]); }
   function toast(msg) { let el = document.querySelector(".toast"); if (!el) { el = document.createElement("div"); el.className = "toast"; document.body.appendChild(el); } el.textContent = msg; el.classList.remove("hide"); clearTimeout(window.__ugToast); window.__ugToast = setTimeout(() => el.classList.add("hide"), 2800); }
   function requireRole(role) { const u = currentUser(); if (!u || u.role !== role) { location.replace("../../pages/login/index.html"); return null; } return u; }
-  window.UjiStore = { KEY, get, addEvent, runDemoScenario, resetDemo, updateEvent, upsertSession, updateSession, setMonitoring, currentUser, setUser, logout, fmt, fmtLong, ago, esc, toast, requireRole, cameraConnected };
+  window.UjiStore = { KEY, get, addEvent, runDemoScenario, resetDemo, updateEvent, reviewEvent, upsertSession, updateSession, setMonitoring, saveParticipantSession, getParticipantSession, updateParticipantSession, currentUser, setUser, logout, fmt, fmtLong, ago, esc, toast, requireRole, cameraConnected };
 })();

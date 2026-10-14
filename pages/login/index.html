@@ -2,146 +2,78 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Masuk | UjiGuard</title>
-    <link rel="stylesheet" href="../../assets/css/tokens.css" />
-    <link rel="stylesheet" href="login.css" />
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="auth-flow.css">
   </head>
   <body class="login-body">
     <main class="login-wrap">
       <section class="login-story">
-        <div class="story-top">
-          <a class="brand brand-light" href="index.html"
-            ><span class="brand-mark"
-              ><svg viewBox="0 0 32 32" fill="none">
-                <path
-                  d="M16 3.8 26 7.5v7.1c0 7.2-4.7 11.6-10 13.8C10.7 26.2 6 21.8 6 14.6V7.5L16 3.8Z"
-                  stroke="currentColor"
-                  stroke-width="2"
-                />
-                <path
-                  d="m11.5 15.7 3 3.1 6.2-7"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                /></svg></span
-            ><span
-              ><strong>UjiGuard</strong><small>SMART EDUCATION</small></span
-            ></a
-          ><span class="pill-outline">Prototipe · 2026</span>
-        </div>
-        <div class="story-main">
-          <div class="story-chip">
-            <span class="live-dot"></span> EXAM SIGNALS, MADE CLEAR
+        <a class="brand brand-light auth-brand" href="../../index.html">
+          <span class="brand-mark" aria-hidden="true">U</span>
+          <span><strong>UjiGuard</strong><small>UJIAN TERJAGA, PROSES TERARAH</small></span>
+        </a>
+        <div class="auth-story-copy">
+          <span class="story-chip"><span class="live-dot"></span> SATU AKSES, TIGA PERAN</span>
+          <h1>Ruang ujian<br><em>dimulai dari sini.</em></h1>
+          <p>Masukkan ID yang terdaftar. UjiGuard mengenali alur masuk dari data akun Anda.</p>
+          <div class="auth-role-list" aria-label="Peran UjiGuard">
+            <span>Peserta</span><span>Pengawas</span><span>Admin</span>
           </div>
-          <h1>Lebih fokus pada<br /><em>yang perlu ditinjau.</em></h1>
-          <p>
-            Ruang kendali ujian yang membantu pengawas menyatukan sinyal visual,
-            audio, dan aktivitas dalam satu alur pemeriksaan yang terarah.
-          </p>
-          <div class="signal-art" aria-hidden="true">
-            <div class="signal-grid"></div>
-            <div class="signal-ring ring-a"></div>
-            <div class="signal-ring ring-b"></div>
-            <div class="signal-ring ring-c"></div>
-            <div class="signal-core">
-              <svg viewBox="0 0 48 48" fill="none">
-                <path
-                  d="M24 5 39 10.5v10.7c0 10.8-7 17.4-15 20.8-8-3.4-15-10-15-20.8V10.5L24 5Z"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                />
-                <path
-                  d="m16.5 23.2 5 5 10-11"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </div>
-            <div class="float-note note-one">
-              <span class="tiny-bars"><i></i><i></i><i></i><i></i></span
-              ><span
-                ><b>Multi-sinyal</b
-                ><small>Visual · Audio · Aktivitas</small></span
-              >
-            </div>
-            <div class="float-note note-two">
-              <span class="pulse-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
         </div>
+        <div class="story-foot"><span>UjiGuard</span><span>Sistem Pendukung Pengawasan Ujian</span></div>
       </section>
+
       <section class="login-panel">
-        <div class="mobile-brand">
-          <span class="brand-mark"
-            ><svg viewBox="0 0 32 32" fill="none">
-              <path
-                d="M16 3.8 26 7.5v7.1c0 7.2-4.7 11.6-10 13.8C10.7 26.2 6 21.8 6 14.6V7.5L16 3.8Z"
-                stroke="currentColor"
-                stroke-width="2"
-              /></svg></span
-          ><strong>UjiGuard</strong>
-        </div>
-        <div class="login-form-wrap">
-          <div class="eyebrow">SELAMAT DATANG KEMBALI</div>
-          <h2>Masuk ke ruang ujian</h2>
-          <p class="form-intro">
-            Gunakan akun yang terdaftar. Peran akan dikenali dari alamat email,
-            tanpa pemilih peran terpisah.
-          </p>
-          <form id="login-form">
+        <div class="mobile-brand"><span class="brand-mark">U</span><strong>UjiGuard</strong></div>
+        <div class="login-form-wrap auth-form-wrap">
+          <div class="eyebrow">PORTAL UJIGUARD</div>
+          <h2>Masuk ke akun Anda</h2>
+          <p class="form-intro">Semua pengguna memulai dengan ID. Peran akan dikenali otomatis.</p>
+
+          <form id="id-form">
             <div class="field">
-              <label for="email">Email terdaftar</label
-              ><input
-                id="email"
-                type="email"
-                placeholder="nama@institusi.ac.id"
-                autocomplete="username"
-                required
-              />
+              <label for="user-id">ID pengguna</label>
+              <input id="user-id" name="user-id" type="text" placeholder="Contoh: PST-001" autocomplete="username" autocapitalize="characters" required>
             </div>
-            <div class="field">
-              <label for="password">Kata sandi</label>
-              <div class="password-wrap">
-                <input
-                  id="password"
-                  type="password"
-                  placeholder="Masukkan kata sandi"
-                  autocomplete="current-password"
-                  required
-                /><button
-                  class="eye-btn"
-                  type="button"
-                  id="toggle-password"
-                  aria-label="Tampilkan kata sandi"
-                ><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
-              </div>
-            </div>
-            <div class="login-error hide" id="login-error" role="alert"></div>
-            <button class="btn btn-primary login-submit" type="submit">
-              Masuk ke UjiGuard
-            </button>
+            <div class="login-error hide" id="id-error" role="alert"></div>
+            <button class="btn btn-primary login-submit" type="submit">Lanjutkan <span aria-hidden="true">→</span></button>
           </form>
-          <div class="demo-box">
-            <div class="demo-top">
-              <span class="demo-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v6c0 5-3 8-8 10-5-2-8-5-8-10V6l8-3Z"/><path d="m8 12 3 3 5-6"/></svg></span>
-              <div>
-                <strong>Ruang demo untuk juri</strong>
-                <p>
-                  Gunakan salah satu akun berikut. Peran muncul otomatis dari
-                  email.
-                </p>
+
+          <form id="staff-form" class="hide">
+            <div class="selected-id">ID terverifikasi <strong id="staff-id-label"></strong></div>
+            <div class="field">
+              <label for="staff-email">Email</label>
+              <input id="staff-email" name="email" type="email" placeholder="nama@ujiguard.demo" autocomplete="username" required>
+            </div>
+            <div class="field">
+              <label for="staff-password">Kata sandi</label>
+              <div class="password-wrap">
+                <input id="staff-password" name="password" type="password" placeholder="Masukkan kata sandi" autocomplete="current-password" required>
+                <button class="eye-btn" type="button" id="toggle-password" aria-label="Tampilkan kata sandi">◉</button>
               </div>
             </div>
-            <div class="demo-account">
-              <span aria-hidden="true"></span> Webcam hanya diaktifkan dari halaman Station Demo oleh panitia, setelah izin browser diberikan.
-          </div>
+            <div class="login-error hide" id="staff-error" role="alert"></div>
+            <button class="btn btn-primary login-submit" type="submit">Masuk <span aria-hidden="true">→</span></button>
+            <button class="auth-back" type="button" id="back-to-id">Kembali ke ID</button>
+          </form>
+
+          <aside class="demo-box auth-demo-box">
+            <strong>Akun demo</strong>
+            <p>Peserta: <code>PST-001</code></p>
+            <p>Pengawas: <code>PGW-001</code> · pengawas@ujiguard.demo</p>
+            <p>Admin: <code>ADM-001</code> · admin@ujiguard.demo</p>
+            <small>Kata sandi pengawas dan admin: <code>demo123</code></small>
+          </aside>
         </div>
-        <footer class="login-footer"><span>UjiGuard &middot; Sistem Pendukung Pengawasan Ujian</span></footer>
+        <footer class="login-footer"><span>UjiGuard · Sistem Pendukung Pengawasan Ujian</span></footer>
       </section>
     </main>
-    <script src="../../assets/js/store.js"></script>
+    <script src="../../assets/js/admin-store.js"></script>
+    <script src="../../assets/js/demo-users.js"></script>
+    <script src="../../assets/js/auth.js"></script>
     <script src="login.js"></script>
   </body>
 </html>

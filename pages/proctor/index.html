@@ -1,0 +1,39 @@
+﻿<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Dashboard Pengawas | UjiGuard</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../role-placeholder.css">
+    <link rel="stylesheet" href="proctor-dashboard.css">
+  </head>
+  <body class="proctor-page">
+    <div class="proctor-shell">
+      <aside class="proctor-sidebar">
+        <a class="proctor-logo" href="index.html"><span class="role-brand-mark">U</span><span><strong>UjiGuard</strong><small>PORTAL PENGAWAS</small></span></a>
+        <nav class="proctor-nav" aria-label="Menu pengawas">
+          <button data-view="dashboard" class="is-active">Dashboard</button>
+          <button data-view="monitor">Monitor Peserta</button>
+          <button data-view="review">Perlu Ditinjau <b id="nav-review-count">0</b></button>
+          <button data-view="history">Riwayat Pemeriksaan</button>
+        </nav>
+        <div class="proctor-account"><span class="admin-avatar">PG</span><span><strong id="proctor-name"></strong><small id="proctor-id"></small></span><button id="proctor-logout" type="button" aria-label="Keluar">Keluar</button></div>
+      </aside>
+      <main class="proctor-main">
+        <header class="proctor-topbar"><div><div class="eyebrow">MONITORING UJIAN</div><h1 id="page-title">Dashboard Pengawas</h1></div><div class="proctor-live-status"><i></i> Data diperbarui otomatis</div></header>
+        <div class="proctor-content">
+          <div id="session-picker"></div>
+          <div id="proctor-view"></div>
+        </div>
+      </main>
+    </div>
+    <video id="proctor-video" autoplay playsinline></video>
+    <script src="../../assets/js/admin-store.js"></script>
+    <script src="../../assets/js/demo-users.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/store.js"></script>
+    <script src="../../assets/js/webrtc.js"></script>
+    <script src="proctor-dashboard.js"></script>
+  </body>
+</html>

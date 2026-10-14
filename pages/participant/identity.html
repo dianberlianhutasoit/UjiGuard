@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Konfirmasi Identitas | UjiGuard</title>
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../role-placeholder.css">
+  </head>
+  <body class="role-page">
+    <main class="role-shell identity-shell">
+      <div class="role-brand"><span class="role-brand-mark">U</span><strong>UjiGuard</strong></div>
+      <section class="role-card">
+        <div class="eyebrow">KONFIRMASI IDENTITAS</div>
+        <h1>Pastikan data Anda benar</h1>
+        <p class="role-intro">ID peserta terdaftar. Periksa identitas dan sesi ujian sebelum melanjutkan.</p>
+        <dl class="identity-details">
+          <div><dt>Nama peserta</dt><dd id="participant-name"></dd></div>
+          <div><dt>ID peserta</dt><dd id="participant-id"></dd></div>
+          <div><dt>Ujian</dt><dd id="exam-name"></dd></div>
+          <div><dt>ID ujian</dt><dd id="exam-id"></dd></div>
+          <div><dt>Sesi</dt><dd id="session-id"></dd></div>
+          <div><dt>Waktu sesi</dt><dd id="session-time"></dd></div>
+          <div><dt>Mulai</dt><dd id="session-start"></dd></div>
+          <div><dt>Selesai</dt><dd id="session-end"></dd></div>
+          <div><dt>Mode ujian</dt><dd id="exam-mode"></dd></div>
+        </dl>
+        <div class="login-error hide" id="identity-error" role="alert"></div>
+        <button class="btn btn-primary role-primary" id="confirm-identity" type="button">Konfirmasi &amp; Lanjut</button>
+        <a class="role-back-link" href="../login/index.html">Kembali ke halaman awal</a>
+      </section>
+      <footer class="role-footer">UjiGuard · Sistem Pendukung Pengawasan Ujian</footer>
+    </main>
+    <script src="../../assets/js/admin-store.js"></script>
+    <script src="../../assets/js/demo-users.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="identity.js"></script>
+  </body>
+</html>
