@@ -114,7 +114,7 @@
     $("session-gate-countdown").textContent = ended || abandonedSession ? "" : formatCountdown(target);
     $("session-gate").classList.toggle("is-ended", ended);
     updateEnterButton();
-    if (sessionStarted && remaining <= 0) finishSession(false);
+    if (sessionStarted && (scheduleCompleted || remaining <= 0)) finishSession(false);
   };
 
   $("header-name").textContent = demo.name;
