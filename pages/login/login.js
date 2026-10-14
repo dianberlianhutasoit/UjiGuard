@@ -50,9 +50,18 @@
   staffForm.addEventListener("submit", (event) => {
     event.preventDefault();
     staffError.classList.add("hide");
-    const email = document.getElementById("staff-email").value.trim().toLowerCase();
-    if (!selectedUser || !["proctor", "admin"].includes(selectedUser.role) || email !== selectedUser.email || password.value !== selectedUser.password) {
-      staffError.textContent = "Email atau kata sandi tidak sesuai dengan ID tersebut.";
+    const email = document
+      .getElementById("staff-email")
+      .value.trim()
+      .toLowerCase();
+    if (
+      !selectedUser ||
+      !["proctor", "admin"].includes(selectedUser.role) ||
+      email !== selectedUser.email ||
+      password.value !== selectedUser.password
+    ) {
+      staffError.textContent =
+        "Email atau kata sandi tidak sesuai dengan ID tersebut.";
       staffError.classList.remove("hide");
       return;
     }

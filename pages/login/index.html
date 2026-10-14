@@ -1,64 +1,137 @@
 <!doctype html>
 <html lang="id">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Masuk | Tervia</title>
-    <link rel="stylesheet" href="../../assets/css/tokens.css">
-    <link rel="stylesheet" href="login.css">
-    <link rel="stylesheet" href="auth-flow.css">
-    <link rel="stylesheet" href="../../assets/css/ujiguard-theme.css">
+    <link rel="stylesheet" href="../../assets/css/tokens.css" />
+    <link rel="stylesheet" href="login.css" />
+    <link rel="stylesheet" href="auth-flow.css" />
+    <link rel="stylesheet" href="../../assets/css/ujiguard-theme.css" />
   </head>
   <body class="login-body">
     <main class="login-wrap">
       <section class="login-story">
         <a class="brand brand-light auth-brand" href="../../index.html">
-          <span class="brand-mark brand-logo" aria-hidden="true"><img src="../../assets/img/tervia-mark.svg" alt=""></span>
-          <span><strong>Tervia</strong><small>UJIAN TERJAGA, PROSES TERARAH</small></span>
+          <span class="brand-mark brand-logo" aria-hidden="true"
+            ><img src="../../assets/img/tervia-logo.png" alt=""
+          /></span>
+          <span
+            ><strong>Tervia</strong
+            ><small>Ujian terarah, Celah terjaga</small></span
+          >
         </a>
         <div class="brand-hero" aria-label="Logo Tervia">
-          <img class="tervia-lockup" src="../../assets/img/tervia-logo.svg" alt="Logo Tervia">
+          <img
+            class="tervia-lockup"
+            src="../../assets/img/tervia-logo.png"
+            alt="Logo Tervia"
+          />
         </div>
         <div class="auth-story-copy">
-          <h1>Selamat datang<br><em>di Tervia.</em></h1>
+          <h1>Selamat datang<br /><em>di Tervia.</em></h1>
           <p>Masukkan ID yang terdaftar untuk melanjutkan.</p>
         </div>
-        <div class="story-foot"><span>Tervia</span><span>Sistem Pendukung Pengawasan Ujian</span></div>
+        <div class="story-foot"><span>Tervia</span></div>
       </section>
 
       <section class="login-panel">
-        <div class="mobile-brand"><span class="brand-mark brand-logo"><img src="../../assets/img/tervia-mark.svg" alt="Logo Tervia"></span><strong>Tervia</strong></div>
+        <div class="login-stars" aria-hidden="true">
+          <span class="login-star login-star-one">✦</span>
+          <span class="login-star login-star-two">✧</span>
+          <span class="login-star login-star-three">✦</span>
+          <span class="login-star login-star-four">✧</span>
+          <span class="login-star login-star-five">✦</span>
+          <span class="login-star login-star-six">✧</span>
+          <span class="login-star login-star-seven">✦</span>
+          <span class="login-star login-star-eight">✧</span>
+          <span class="login-star login-star-nine">✦</span>
+          <span class="login-star login-star-ten">✧</span>
+          <span class="login-star login-star-eleven">✦</span>
+          <span class="login-star login-star-twelve">&#10023;</span>
+          <span class="login-star login-star-thirteen">&#10022;</span>
+          <span class="login-star login-star-fourteen">&#10023;</span>
+          <span class="login-star login-star-fifteen">&#10022;</span>
+          <span class="login-star login-star-sixteen">&#10023;</span>
+          <span class="login-star login-star-seventeen">&#10022;</span>
+          <span class="login-star login-star-eighteen">&#10023;</span>
+          <span class="login-star login-star-nineteen">&#10022;</span>
+          <span class="login-star login-star-twenty">&#10023;</span>
+        </div>
+        <div class="mobile-brand">
+          <span class="brand-mark brand-logo"
+            ><img
+              src="../../assets/img/tervia-logo.png"
+              alt="Logo Tervia" /></span
+          ><strong>Tervia</strong>
+        </div>
         <div class="login-form-wrap auth-form-wrap">
           <h2>Masuk ke akun Anda</h2>
 
           <form id="id-form">
             <div class="field">
               <label for="user-id">ID pengguna</label>
-              <input id="user-id" name="user-id" type="text" placeholder="Masukkan ID pengguna" autocomplete="username" autocapitalize="characters" required>
+              <input
+                id="user-id"
+                name="user-id"
+                type="text"
+                placeholder="Masukkan ID pengguna"
+                autocomplete="username"
+                autocapitalize="characters"
+                required
+              />
             </div>
             <div class="login-error hide" id="id-error" role="alert"></div>
-            <button class="btn btn-primary login-submit" type="submit">Lanjutkan <span aria-hidden="true">→</span></button>
+            <button class="btn btn-primary login-submit" type="submit">
+              Lanjutkan
+            </button>
           </form>
 
           <form id="staff-form" class="hide">
-            <div class="selected-id">ID terverifikasi <strong id="staff-id-label"></strong></div>
+            <div class="selected-id">
+              ID terverifikasi <strong id="staff-id-label"></strong>
+            </div>
             <div class="field">
               <label for="staff-email">Email</label>
-               <input id="staff-email" name="email" type="email" placeholder="nama@tervia.demo" autocomplete="username" required>
+              <input
+                id="staff-email"
+                name="email"
+                type="email"
+                placeholder="nama@tervia.demo"
+                autocomplete="username"
+                required
+              />
             </div>
             <div class="field">
               <label for="staff-password">Kata sandi</label>
               <div class="password-wrap">
-                <input id="staff-password" name="password" type="password" placeholder="Masukkan kata sandi" autocomplete="current-password" required>
-                <button class="eye-btn" type="button" id="toggle-password" aria-label="Tampilkan kata sandi">◉</button>
+                <input
+                  id="staff-password"
+                  name="password"
+                  type="password"
+                  placeholder="Masukkan kata sandi"
+                  autocomplete="current-password"
+                  required
+                />
+                <button
+                  class="eye-btn"
+                  type="button"
+                  id="toggle-password"
+                  aria-label="Tampilkan kata sandi"
+                >
+                  ◉
+                </button>
               </div>
             </div>
             <div class="login-error hide" id="staff-error" role="alert"></div>
-            <button class="btn btn-primary login-submit" type="submit">Masuk <span aria-hidden="true">→</span></button>
-            <button class="auth-back" type="button" id="back-to-id">Kembali ke ID</button>
+            <button class="btn btn-primary login-submit" type="submit">
+              Masuk
+            </button>
+            <button class="auth-back" type="button" id="back-to-id">
+              Kembali ke ID
+            </button>
           </form>
         </div>
-        <footer class="login-footer"><span>Tervia · Sistem Pendukung Pengawasan Ujian</span></footer>
       </section>
     </main>
     <script src="../../assets/js/admin-store.js"></script>
