@@ -120,8 +120,21 @@
   }
   function renderDetail(row) {
     const panel = $("participant-detail");
-    if (!row) { panel.innerHTML = `<div class="detail-empty">Pilih peserta untuk melihat identitas, status perangkat, indikator, dan tindakan pengawas.</div>`; return; }
-    const { participant, runtime, events, attention, recent } = row;
+    if (!panel) return;
+    if (!row || !row.participant) {
+      panel.innerHTML = `<div class="detail-empty">${activeView === "indications" ? "Tidak ada peserta dengan indikasi aktif pada sesi ini." : "Pilih peserta untuk melihat identitas, status perangkat, indikator, dan tindakan pengawas."}</div>`;
+      return;
+    }
+    const { participant } = row;
+    if (!participant.id || !participant.name) {
+      panel.innerHTML = `<div class="detail-empty">Detail peserta tidak dapat ditampilkan karena data identitas tidak lengkap.</div>`;
+      return;
+    }
+    try {
+    const runtime = row.runtime || null;
+    const events = Array.isArray(row.events) ? row.events : [];
+    const attention = row.attention || "Normal";
+    const recent = Number.isFinite(row.recent) ? row.recent : 0;
     const session = selectedSession();
     const data = admin();
     const exam = data.exams.find((item) => item.id === participant.examId);
@@ -176,6 +189,10 @@
       if (button.dataset.reviewAction === "safe") applyReview(participant);
       if (button.dataset.reviewAction === "violation") openViolationForm(participant);
     }));
+    } catch (error) {
+      console.error("Gagal menampilkan detail peserta:", error);
+      panel.innerHTML = `<div class="detail-empty">Detail peserta belum dapat dimuat. Pilih peserta kembali atau periksa data sesi.</div>`;
+    }
   }
   function focusNextIndication(excludedParticipantId) {
     const next = participantRows().find((row) => row.participant.id !== excludedParticipantId && row.attention === "Ada Indikasi");
@@ -250,10 +267,12 @@
     if (!session) { $("proctor-view").innerHTML = `<section class="proctor-panel empty-state">Pilih sesi yang ditugaskan kepada Anda untuk melihat monitoring peserta.</section>`; return; }
     const overview = renderOverview(session);
     const rows = participantRows();
-    selectedParticipantId ||= rows[0]?.participant.id || null;
     const indicationRows = rows.filter((row) => row.attention === "Ada Indikasi");
     if (activeView === "indications" && !indicationRows.some((row) => row.participant.id === selectedParticipantId)) {
       selectedParticipantId = indicationRows[0]?.participant.id || null;
+    }
+    if (activeView !== "indications" && !rows.some((row) => row.participant.id === selectedParticipantId)) {
+      selectedParticipantId = rows[0]?.participant.id || null;
     }
     const selected = rows.find((row) => row.participant.id === selectedParticipantId) || null;
     if (activeView === "violations") { $("proctor-view").innerHTML = `${overview}${renderViolations()}`; return; }
@@ -274,19 +293,23 @@
       activeView = "indications";
       render();
     });
-    document.querySelectorAll("[data-open-view]").forEach((button) => button.addEventListener("click", () => { activeView = button.dataset.openView; render(); }));
+    document.querySelectorAll("[data-open-view]").forEach((button) => button.addEventListener("click", () => changeView(button.dataset.openView)));
+  }
+  function changeView(view) {
+    activeView = view;
+    const rows = participantRows();
+    const candidates = view === "indications" ? rows.filter((row) => row.attention === "Ada Indikasi") : rows;
+    selectedParticipantId = candidates[0]?.participant.id || null;
+    render();
   }
   function render() {
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
     const catalogScroll = document.querySelector(".participant-list")?.scrollTop;
-    const detailScroll = document.getElementById("participant-detail")?.scrollTop;
     renderContent();
     window.scrollTo(scrollX, scrollY);
     const catalog = document.querySelector(".participant-list");
-    const detail = document.getElementById("participant-detail");
     if (catalog && catalogScroll !== undefined) catalog.scrollTop = catalogScroll;
-    if (detail && detailScroll !== undefined) detail.scrollTop = detailScroll;
   }
   function presenceSignature(presence) {
     return JSON.stringify({
@@ -310,14 +333,14 @@
       if (changed) render();
     }).finally(() => { presenceRequestPending = false; });
   }
-  document.querySelectorAll(".proctor-nav [data-view]").forEach((button) => button.addEventListener("click", () => { activeView = button.dataset.view; render(); }));
+  document.querySelectorAll(".proctor-nav [data-view]").forEach((button) => button.addEventListener("click", () => changeView(button.dataset.view)));
   $("session-picker").addEventListener("click", (event) => {
     const button = event.target.closest("[data-choose-session]");
     if (button) { selectedSessionId = button.dataset.chooseSession; selectedParticipantId = null; if (rtc) { rtc.stop(); rtc = null; } render(); }
   });
   $("proctor-view").addEventListener("click", (event) => {
     const button = event.target.closest("[data-select-participant]");
-    if (button) { selectedParticipantId = button.dataset.selectParticipant; if (rtc) { rtc.stop(); rtc = null; } render(); }
+    if (button && button.dataset.selectParticipant !== selectedParticipantId) { selectedParticipantId = button.dataset.selectParticipant; if (rtc) { rtc.stop(); rtc = null; rtcStatus = "closed"; } render(); }
   });
   $("proctor-logout").addEventListener("click", () => { if (rtc) rtc.stop(); window.UjiAuth.signOut(); location.href = "../login/index.html"; });
   $("violation-form").addEventListener("submit", submitViolation);

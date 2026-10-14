@@ -9,3 +9,4 @@
 .violation-dialog select,.violation-dialog textarea{width:100%;padding:10px;border:1px solid #dce7e0;border-radius:8px;background:#fbfdfb;color:#29434a;font:inherit;font-size:11px}
 .violation-dialog textarea{resize:vertical}
 .violation-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.detail-card{position:static;top:auto;max-height:none;overflow:visible}
