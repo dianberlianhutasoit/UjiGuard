@@ -8,7 +8,7 @@
   const adminData = UjiAdminStore.get();
   const schedule = adminData.examSessions.find((item) => item.id === demo.sessionId && item.examId === demo.examId);
   const bounds = UjiAdminStore.sessionBounds(schedule);
-  if (!schedule || !Number.isFinite(bounds.endAt)) { location.replace("identity.html"); return; }
+  if (!schedule || !Number.isFinite(bounds.startAt) || !Number.isFinite(bounds.endAt) || bounds.endAt <= bounds.startAt) { location.replace("identity.html"); return; }
   const previousSession = UjiStore.getParticipantSession(demo.id);
   if (previousSession?.monitoringStatus === "Monitoring Aktif") {
     UjiStore.updateParticipantSession(demo.id, { monitoringStatus: "Terhenti", leftAt: new Date().toISOString() });
@@ -29,8 +29,9 @@
     node.classList.toggle("is-error", value === "Bermasalah");
   };
   const isLive = (stream, kind) => !!stream?.getTracks().some((track) => track.kind === kind && track.readyState === "live");
+  const canEnterSession = () => Date.now() >= bounds.startAt && Date.now() < bounds.endAt;
   const updateEnterButton = () => {
-    $("enter-exam").disabled = !(isLive(cameraStream, "video") && isLive(microphoneStream, "audio") && Date.now() < bounds.endAt);
+    $("enter-exam").disabled = !(isLive(cameraStream, "video") && isLive(microphoneStream, "audio") && canEnterSession());
   };
   const updateConnectionStatus = () => {
     const status = navigator.onLine ? "Aktif" : "Bermasalah";
@@ -89,13 +90,24 @@
       $("active-monitoring-status").textContent = "Perangkat Bermasalah";
     }
   };
-  const tickCountdown = () => {
-    const remaining = Math.max(0, bounds.endAt - Date.now());
-    const seconds = Math.floor(remaining / 1000);
+  const formatCountdown = (target) => {
+    const seconds = Math.floor(Math.max(0, target - Date.now()) / 1000);
     const hours = String(Math.floor(seconds / 3600)).padStart(2, "0");
     const minutes = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
     const secs = String(seconds % 60).padStart(2, "0");
-    $("session-countdown").textContent = `${hours}:${minutes}:${secs}`;
+    return `${hours}:${minutes}:${secs}`;
+  };
+  const tickCountdown = () => {
+    const now = Date.now();
+    const ended = now >= bounds.endAt;
+    const beforeStart = now < bounds.startAt;
+    const target = beforeStart ? bounds.startAt : bounds.endAt;
+    const remaining = Math.max(0, bounds.endAt - now);
+    $("session-countdown").textContent = formatCountdown(bounds.endAt);
+    $("session-gate-status").textContent = ended ? "Sesi telah selesai" : beforeStart ? "Sesi belum dimulai" : "Sesi sedang berlangsung";
+    $("session-gate-label").textContent = ended ? "" : beforeStart ? "Mulai dalam" : "Waktu tersisa";
+    $("session-gate-countdown").textContent = ended ? "" : formatCountdown(target);
+    $("session-gate").classList.toggle("is-ended", ended);
     updateEnterButton();
     if (sessionStarted && remaining <= 0) finishSession(false);
   };
@@ -117,6 +129,7 @@
   $("active-end-time").textContent = `${schedule.endTime} WIB`;
   $("active-mode").textContent = demo.mode;
   tickCountdown();
+  countdownTimer = setInterval(tickCountdown, 1000);
   updateConnectionStatus();
 
   $("check-devices").addEventListener("click", async () => {
@@ -169,7 +182,7 @@
   });
 
   $("enter-exam").addEventListener("click", () => {
-    if (!isLive(cameraStream, "video") || !isLive(microphoneStream, "audio") || Date.now() >= bounds.endAt) return;
+    if (!isLive(cameraStream, "video") || !isLive(microphoneStream, "audio") || !canEnterSession()) return;
     const joinedAt = new Date().toISOString();
     activeRecord = {
       participantId: demo.id, name: demo.name, examId: demo.examId, sessionId: demo.sessionId,
@@ -194,7 +207,6 @@
     $("exam-stage").classList.remove("hide");
     $("active-monitoring-status").textContent = "Monitoring Aktif";
     tickCountdown();
-    countdownTimer = setInterval(tickCountdown, 1000);
   });
 
   window.addEventListener("online", updateConnectionStatus);

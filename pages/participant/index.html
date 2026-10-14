@@ -18,6 +18,7 @@
 
       <section class="participant-stage" id="device-stage">
         <div class="stage-heading"><div class="eyebrow">LANGKAH 2 DARI 3</div><h1>Pemeriksaan Perangkat</h1><p>Izinkan akses kamera dan mikrofon untuk memastikan perangkat siap digunakan.</p></div>
+        <div class="session-gate" id="session-gate" role="status"><strong id="session-gate-status"></strong><span><span id="session-gate-label"></span> <b id="session-gate-countdown"></b></span></div>
         <div class="device-layout">
           <article class="role-card device-card">
             <div class="device-status-row"><div><span class="device-icon">◉</span><div><strong>Kamera</strong><small>Untuk persiapan ujian</small></div></div><span class="status-pill" id="camera-status">Belum Aktif</span></div>
@@ -39,7 +40,8 @@
       <section class="participant-stage hide" id="exam-stage">
         <div class="stage-heading"><div class="eyebrow">LANGKAH 3 DARI 3</div><h1>Sesi Ujian</h1><p>Perangkat tetap aktif pada halaman ini selama sesi berlangsung.</p></div>
         <article class="role-card active-exam-card">
-          <div class="monitoring-banner"><span class="monitoring-dot"></span><div><strong id="active-monitoring-status">Monitoring Aktif</strong><small>Kamera dan mikrofon aktif pada halaman peserta sejak <span id="active-joined-at"></span>.</small></div></div>
+          <div class="monitoring-banner"><span class="monitoring-dot"></span><div><strong id="active-monitoring-status">Monitoring Aktif</strong><small>Status kamera dan mikrofon dipantau selama halaman sesi UjiGuard aktif. Mulai <span id="active-joined-at"></span>.</small></div></div>
+          <p class="prototype-monitoring-note">Mikrofon hanya diperiksa statusnya; audio belum dikirim atau dianalisis. Secure exam browser dan monitoring agent belum diimplementasikan.</p>
           <div class="active-exam-title"><div class="eyebrow">UJIAN BERLANGSUNG</div><h2 id="active-exam-name"></h2></div>
           <dl class="active-exam-details"><div><dt>Nama peserta</dt><dd id="active-name"></dd></div><div><dt>ID peserta</dt><dd id="active-id"></dd></div><div><dt>Sesi</dt><dd id="active-session"></dd></div><div><dt>Waktu sesi</dt><dd id="active-time"></dd></div><div><dt>Waktu mulai</dt><dd id="active-start-time"></dd></div><div><dt>Waktu selesai</dt><dd id="active-end-time"></dd></div><div><dt>Mode</dt><dd id="active-mode"></dd></div></dl>
           <div class="session-countdown"><span>Waktu tersisa</span><strong id="session-countdown">--:--:--</strong></div>
