@@ -1,36 +1,79 @@
 <!doctype html>
 <html lang="id">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Konfirmasi Identitas | Tervia</title>
-    <link rel="stylesheet" href="../../assets/css/tokens.css">
-    <link rel="stylesheet" href="../role-placeholder.css">
-    <link rel="stylesheet" href="../../assets/css/ujiguard-theme.css">
+    <link rel="stylesheet" href="../../assets/css/tokens.css" />
+    <link rel="stylesheet" href="../role-placeholder.css" />
+    <link rel="stylesheet" href="../../assets/css/ujiguard-theme.css" />
   </head>
   <body class="role-page">
     <main class="role-shell identity-shell">
-      <div class="role-brand"><span class="role-brand-mark brand-logo"><img src="../../assets/img/tervia-mark.svg" alt="Logo Tervia"></span><strong>Tervia</strong></div>
+      <div class="role-brand">
+        <span class="role-brand-mark brand-logo"
+          ><img
+            src="../../assets/img/tervia-logo.png"
+            alt="Logo Tervia" /></span
+        ><strong>Tervia</strong>
+      </div>
       <section class="role-card">
         <div class="eyebrow">KONFIRMASI IDENTITAS</div>
         <h1>Pastikan data Anda benar</h1>
-        <p class="role-intro">ID peserta terdaftar. Periksa identitas dan sesi ujian sebelum melanjutkan.</p>
+        <p class="role-intro">
+          ID peserta terdaftar. Periksa identitas dan sesi ujian sebelum
+          melanjutkan.
+        </p>
         <dl class="identity-details">
-          <div><dt>Nama peserta</dt><dd id="participant-name"></dd></div>
-          <div><dt>ID peserta</dt><dd id="participant-id"></dd></div>
-          <div><dt>Ujian</dt><dd id="exam-name"></dd></div>
-          <div><dt>ID ujian</dt><dd id="exam-id"></dd></div>
-          <div><dt>Sesi</dt><dd id="session-id"></dd></div>
-          <div><dt>Waktu sesi</dt><dd id="session-time"></dd></div>
-          <div><dt>Mulai</dt><dd id="session-start"></dd></div>
-          <div><dt>Selesai</dt><dd id="session-end"></dd></div>
-          <div><dt>Mode ujian</dt><dd id="exam-mode"></dd></div>
+          <div>
+            <dt>Nama peserta</dt>
+            <dd id="participant-name"></dd>
+          </div>
+          <div>
+            <dt>ID peserta</dt>
+            <dd id="participant-id"></dd>
+          </div>
+          <div>
+            <dt>Ujian</dt>
+            <dd id="exam-name"></dd>
+          </div>
+          <div>
+            <dt>ID ujian</dt>
+            <dd id="exam-id"></dd>
+          </div>
+          <div>
+            <dt>Sesi</dt>
+            <dd id="session-id"></dd>
+          </div>
+          <div>
+            <dt>Waktu sesi</dt>
+            <dd id="session-time"></dd>
+          </div>
+          <div>
+            <dt>Mulai</dt>
+            <dd id="session-start"></dd>
+          </div>
+          <div>
+            <dt>Selesai</dt>
+            <dd id="session-end"></dd>
+          </div>
+          <div>
+            <dt>Mode ujian</dt>
+            <dd id="exam-mode"></dd>
+          </div>
         </dl>
         <div class="login-error hide" id="identity-error" role="alert"></div>
-        <button class="btn btn-primary role-primary" id="confirm-identity" type="button">Konfirmasi &amp; Lanjut</button>
-        <a class="role-back-link" href="../login/index.html">Kembali ke halaman awal</a>
+        <button
+          class="btn btn-primary role-primary"
+          id="confirm-identity"
+          type="button"
+        >
+          Konfirmasi &amp; Lanjut
+        </button>
+        <a class="role-back-link" href="../login/index.html"
+          >Kembali ke halaman awal</a
+        >
       </section>
-      <footer class="role-footer">Tervia · Sistem Pendukung Pengawasan Ujian</footer>
     </main>
     <script src="../../assets/js/admin-store.js"></script>
     <script src="../../assets/js/demo-users.js"></script>
