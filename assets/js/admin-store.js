@@ -27,7 +27,7 @@
       { id: "EXAM-004", name: "Ujian Kompetensi Dasar 2025", type: "Mandiri", description: "Contoh ujian yang telah selesai.", status: "Selesai" },
     ],
     examSessions: [
-      { id: "SESSION-01", examId: "EXAM-001", name: "Sesi 01", date: "2026-10-16", startTime: "09:00", endTime: "10:00", mode: "REMOTE", location: "", examUrl: "https://example.com/exam/123", status: "Akan Datang" },
+      { id: "SESSION-01", examId: "EXAM-001", name: "Sesi 01", date: "2026-10-16", startTime: "09:00", endTime: "10:00", mode: "REMOTE", location: "", examUrl: "http://localhost:8000/pages/student/exam.html", status: "Akan Datang" },
       { id: "SESSION-02", examId: "EXAM-002", name: "Sesi Onsite 01", date: "2026-10-14", startTime: "13:00", endTime: "15:00", mode: "ONSITE", location: "Ruang Cendekia", examUrl: "https://example.org/cbt/session-02", status: "Aktif" },
       { id: "SESSION-03", examId: "EXAM-003", name: "Sesi 01", date: "2026-10-18", startTime: "09:00", endTime: "11:00", mode: "REMOTE", location: "", examUrl: "https://example.net/moodle/quiz/103", status: "Akan Datang" },
       { id: "SESSION-04", examId: "EXAM-004", name: "Sesi Arsip", date: "2026-10-10", startTime: "09:00", endTime: "11:00", mode: "ONSITE", location: "Aula Utama", status: "Selesai" },
@@ -52,6 +52,13 @@
     for (const user of state.users || []) {
       if (user && LEGACY_EMAILS[user.email]) { user.email = LEGACY_EMAILS[user.email]; changed = true; }
       if (user && user.id === "ADM-001" && user.name === "Admin UjiGuard") { user.name = "Admin Tervia"; changed = true; }
+    }
+    // Old browsers may still hold the previous default exam link; migrate exact-match only.
+    for (const session of state.examSessions || []) {
+      if (session && session.examUrl === "https://example.com/exam/123") {
+        session.examUrl = "http://localhost:8000/pages/student/exam.html";
+        changed = true;
+      }
     }
     return changed;
   }

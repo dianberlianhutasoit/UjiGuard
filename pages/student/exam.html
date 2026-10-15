@@ -1,2 +1,44 @@
-<!doctype html><html lang="id"><head>
-    <link rel="icon" type="image/png" href="../../assets/img/tervia-logo-transparent.png" /><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=../login/index.html"><title>Station Demo | Tervia</title></head><body><p>Silakan masuk melalui halaman Tervia. <a href="../login/index.html">Lanjutkan</a></p><script>location.replace("../login/index.html");</script></body></html>
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ujian Tengah Semester — Sistem Informasi</title>
+  <link rel="stylesheet" href="../../assets/css/tokens.css">
+  <link rel="stylesheet" href="student.css">
+</head>
+<body class="cbt-page">
+  <header class="cbt-topbar">
+    <div class="cbt-brand"><span class="cbt-mark">C</span><span><strong>CBT Universitas</strong><small>Portal Ujian Akademik</small></span></div>
+    <div class="cbt-monitor"><span class="dot"></span>Monitoring TERVIA aktif</div>
+  </header>
+  <main class="cbt-wrap">
+    <section class="cbt-main">
+      <div class="cbt-exam-head">
+        <div>
+          <div class="eyebrow">Ujian Tengah Semester</div>
+          <h1>Sistem Informasi</h1>
+          <p class="cbt-student">Nadia Putri · <span class="mono">PST-001</span></p>
+        </div>
+        <div class="cbt-timer"><small>Sisa waktu</small><strong id="cbt-timer" class="mono">59:42</strong></div>
+      </div>
+      <div class="cbt-progress"><span id="cbt-qpos">Soal 1 dari 20</span><span id="cbt-answered">0/20 terjawab</span></div>
+      <article class="cbt-question">
+        <h2 id="cbt-qtext"></h2>
+        <div class="cbt-options" id="cbt-options"></div>
+      </article>
+      <div class="cbt-nav">
+        <button class="btn btn-light" id="cbt-prev" type="button">← Sebelumnya</button>
+        <button class="btn btn-primary" id="cbt-next" type="button">Selanjutnya →</button>
+      </div>
+      <p class="cbt-note" id="cbt-timeup" hidden>Waktu habis — jawaban tersimpan otomatis di halaman ini (demo).</p>
+    </section>
+    <aside class="cbt-side">
+      <h2>Nomor Soal</h2>
+      <div class="cbt-grid" id="cbt-grid"></div>
+      <p class="cbt-note">Jawaban tersimpan otomatis di halaman ini (demo).</p>
+    </aside>
+  </main>
+  <script src="exam.js"></script>
+</body>
+</html>

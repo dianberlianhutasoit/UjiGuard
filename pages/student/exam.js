@@ -1,12 +1,85 @@
-(function(){
- const stationDemo=new URLSearchParams(location.search).get("station-demo")==="1"; if(!stationDemo){location.replace("../../pages/login/index.html");return;} const savedUser=UjiStore.currentUser(); const user=savedUser?.role==="proctor"?savedUser:{role:"proctor",name:"Panitia Demo",email:"operator@tervia.demo"};
- const $=id=>document.getElementById(id); let stream=null,timer=null,busy=false,missingSince=null,reported=false,lastHeartbeat=0,stopRtc=null;
- let data=UjiStore.get(),session=data.sessions.find(s=>s.email===user.email)||data.sessions.find(s=>s.desk==="A-01");
- if(!session){session={id:"UG-DEMO-03",name:user.name,email:user.email,desk:"A-01",status:"active",started:Date.now(),device:"Kamera belum aktif"};UjiStore.upsertSession(session)}
- UjiStore.updateSession(session.id,{status:"active"}); session=UjiStore.get().sessions.find(s=>s.id===session.id); $("desk-overlay").textContent=session.desk;
- function stop(){if(timer)clearInterval(timer);timer=null;if(stopRtc){stopRtc();stopRtc=null}if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$("camera-video").srcObject=null;$("camera-video").classList.add("hide");$("cam-placeholder").classList.remove("hide");$("start-camera").disabled=false;$("stop-camera").disabled=true;UjiStore.updateSession(session.id,{device:"Kamera belum aktif",cameraHeartbeat:null});if(UjiStore.get().monitoring?.active)UjiStore.setMonitoring(false)}
- async function tick(){if(busy||!stream)return;if(Date.now()-lastHeartbeat>=2000){lastHeartbeat=Date.now();UjiStore.updateSession(session.id,{device:"Kamera lokal aktif",cameraHeartbeat:lastHeartbeat})}if(!UjiStore.get().monitoring?.active||!window.__ugDetector)return;busy=true;try{const bitmap=await createImageBitmap($("camera-video"));const faces=await window.__ugDetector.detect(bitmap);bitmap.close();if(faces.length){missingSince=null;reported=false;$("camera-help").textContent="Pemeriksaan lokal aktif. Wajah terlihat."}else{if(!missingSince)missingSince=Date.now();if(Date.now()-missingSince>=5000&&!reported){reported=true;UjiStore.addEvent({sessionId:session.id,student:session.name,participantNo:session.participantNo,desk:session.desk,type:"visual",title:"Wajah tidak terdeteksi selama 5 detik",detail:"Indikasi dari Face Detection API browser lokal. Dapat terjadi karena posisi, pencahayaan, atau keterbatasan deteksi; perlu pemeriksaan pengawas.",priority:"high",source:"Deteksi lokal browser",label:"Deteksi Lokal",isSimulation:false});UjiStore.updateSession(session.id,{device:"Kamera lokal aktif",cameraHeartbeat:lastHeartbeat});$("camera-help").textContent="Pemeriksaan lokal aktif."}}}catch(e){$("camera-help").textContent="Deteksi tidak tersedia atau kamera belum siap."}finally{busy=false}}
- $("start-camera").addEventListener("click",async()=>{try{window.__ugDetector=("FaceDetector" in window)?new FaceDetector({fastMode:true,maxDetectedFaces:2}):null;stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});stream.getVideoTracks().forEach(track=>track.addEventListener("ended",stop,{once:true}));$("camera-video").srcObject=stream;$("camera-video").classList.remove("hide");$("cam-placeholder").classList.add("hide");$("start-camera").disabled=true;$("stop-camera").disabled=false;lastHeartbeat=Date.now();UjiStore.updateSession(session.id,{device:"Kamera lokal aktif",cameraHeartbeat:lastHeartbeat});stopRtc=UjiRtc.startStation(()=>stream);timer=setInterval(tick,1000);$("camera-help").textContent=window.__ugDetector?"Kamera aktif. Deteksi wajah lokal berjalan saat monitoring dimulai; stream hanya diteruskan ke pengawas saat diminta dan tidak direkam.":"Kamera aktif. Browser ini tidak mendukung deteksi indikator otomatis; stream tidak direkam."}catch(e){UjiStore.updateSession(session.id,{device:"Kamera bermasalah",cameraHeartbeat:null});$("camera-help").textContent="Kamera tidak dapat dimulai. Periksa izin browser dan gunakan localhost."}});
- try{const resetChannel=new BroadcastChannel("ujiguard-demo");resetChannel.addEventListener("message",event=>{if(event.data?.type==="reset")stop()})}catch(e){}
- $("stop-camera").addEventListener("click",stop);window.addEventListener("beforeunload",stop);document.querySelector("[data-logout]").addEventListener("click",()=>{stop();UjiStore.updateSession(session.id,{status:"idle"});UjiStore.logout()});
+(function () {
+  "use strict";
+  var QUESTIONS = [
+    { q: "Sistem informasi pada dasarnya merupakan kombinasi dari …", options: ["Perangkat keras, perangkat lunak, data, prosedur, dan manusia", "Hanya perangkat keras dan jaringan", "Hanya aplikasi dan database", "Server, kabel, dan listrik"] },
+    { q: "Komponen sistem informasi yang berupa aturan dan tata cara kerja disebut …", options: ["Prosedur", "Perangkat keras", "Database", "Jaringan"] },
+    { q: "Perbedaan utama data dan informasi adalah …", options: ["Informasi adalah data yang telah diolah dan bermakna", "Data selalu berbentuk angka", "Informasi tidak membutuhkan data", "Keduanya hal yang sama"] },
+    { q: "Kumpulan data yang terorganisasi dan mudah diakses disebut …", options: ["Arsip kertas", "Database", "Spreadsheet acak", "Catatan manual"] },
+    { q: "Primary key pada tabel database berfungsi sebagai …", options: ["Pengenal unik setiap baris data", "Kata sandi pengguna", "Nama tabel", "Ukuran file database"] },
+    { q: "Diagram yang menggambarkan entitas beserta relasinya adalah …", options: ["DFD", "Flowchart", "ERD", "Use case"] },
+    { q: "DFD (Data Flow Diagram) digunakan untuk menggambarkan …", options: ["Aliran data dalam sistem", "Struktur organisasi", "Jadwal proyek", "Anggaran biaya"] },
+    { q: "Tahap pertama dalam SDLC model waterfall adalah …", options: ["Pengodean", "Analisis kebutuhan", "Pengujian", "Pemeliharaan"] },
+    { q: "Pengujian black-box berfokus pada …", options: ["Struktur kode program", "Fungsi dan keluaran tanpa melihat kode", "Kecepatan prosesor", "Desain kemasan"] },
+    { q: "Tujuan normalisasi dalam perancangan database adalah …", options: ["Menambah duplikasi data", "Mengurangi redundansi data", "Memperlambat query", "Menghapus seluruh relasi"] },
+    { q: "Perintah SQL yang digunakan untuk menampilkan data adalah …", options: ["DELETE", "UPDATE", "SELECT", "DROP"] },
+    { q: "Jaringan komputer dalam satu gedung atau kampus disebut …", options: ["WAN", "Internet", "LAN", "VPN"] },
+    { q: "Layanan komputasi melalui internet dengan bayar sesuai pakai disebut …", options: ["Cloud computing", "Mainframe", "Intranet", "Firmware"] },
+    { q: "Upaya memperoleh data pribadi dengan menyamar disebut …", options: ["Phishing", "Browsing", "Caching", "Streaming"] },
+    { q: "Salinan cadangan data untuk antisipasi kehilangan disebut …", options: ["Backup", "Virus", "Spam", "Cache"] },
+    { q: "Simbol belah ketupat pada flowchart menyatakan …", options: ["Proses", "Keputusan/percabangan", "Mulai/selesai", "Input/output"] },
+    { q: "Metode pengembangan perangkat lunak yang menekankan iterasi cepat dan umpan balik adalah …", options: ["Waterfall", "Agile", "Big bang", "Code and fix"] },
+    { q: "Tahap pemeliharaan (maintenance) dilakukan …", options: ["Sebelum analisis", "Setelah sistem digunakan", "Bersamaan pengodean", "Tidak pernah"] },
+    { q: "Antarmuka yang memudahkan pengguna berinteraksi dengan sistem disebut …", options: ["UI/UX", "CPU", "RAM", "BIOS"] },
+    { q: "Contoh informasi yang berkualitas bagi pengambil keputusan adalah …", options: ["Akurat, tepat waktu, dan relevan", "Banyak, acak, dan terlambat", "Singkat tanpa konteks", "Rahasia dan tidak dibagikan"] },
+  ];
+  var TOTAL = QUESTIONS.length;
+  var answers = new Array(TOTAL).fill(null);
+  var index = 0;
+  var remain = 59 * 60 + 42;
+  var LETTERS = ["A", "B", "C", "D"];
+
+  function $(id) { return document.getElementById(id); }
+  function fmt(s) {
+    var m = Math.floor(s / 60), sec = s % 60;
+    return (m < 10 ? "0" + m : "" + m) + ":" + (sec < 10 ? "0" + sec : "" + sec);
+  }
+  function renderGrid() {
+    var grid = $("cbt-grid");
+    grid.innerHTML = "";
+    for (var i = 0; i < TOTAL; i++) {
+      (function (n) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = n + 1;
+        b.className = "cbt-num" + (n === index ? " is-current" : "") + (answers[n] !== null ? " is-answered" : "");
+        b.setAttribute("aria-label", "Soal " + (n + 1));
+        b.addEventListener("click", function () { index = n; render(); });
+        grid.appendChild(b);
+      })(i);
+    }
+  }
+  function render() {
+    var item = QUESTIONS[index];
+    $("cbt-qpos").textContent = "Soal " + (index + 1) + " dari " + TOTAL;
+    $("cbt-qtext").textContent = item.q;
+    var box = $("cbt-options");
+    box.innerHTML = "";
+    item.options.forEach(function (text, n) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "cbt-opt" + (answers[index] === n ? " is-picked" : "");
+      b.innerHTML = "<b>" + LETTERS[n] + "</b><span></span>";
+      b.querySelector("span").textContent = text;
+      b.addEventListener("click", function () { answers[index] = n; render(); });
+      box.appendChild(b);
+    });
+    var done = answers.filter(function (a) { return a !== null; }).length;
+    $("cbt-answered").textContent = done + "/" + TOTAL + " terjawab";
+    $("cbt-prev").disabled = index === 0;
+    $("cbt-next").disabled = index === TOTAL - 1;
+    renderGrid();
+  }
+  $("cbt-prev").addEventListener("click", function () { if (index > 0) { index--; render(); } });
+  $("cbt-next").addEventListener("click", function () { if (index < TOTAL - 1) { index++; render(); } });
+  $("cbt-timer").textContent = fmt(remain);
+  render();
+  var timer = setInterval(function () {
+    if (remain <= 0) {
+      clearInterval(timer);
+      $("cbt-timeup").hidden = false;
+      return;
+    }
+    remain--;
+    $("cbt-timer").textContent = fmt(remain);
+  }, 1000);
 })();
