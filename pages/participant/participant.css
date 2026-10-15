@@ -42,3 +42,11 @@
 .session-countdown{display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding:14px 16px;border-radius:11px;background:#f1f7f3;color:#55736a;font-size:11px}.session-countdown strong{font-size:22px;letter-spacing:.06em;color:#206746;font-variant-numeric:tabular-nums}.leave-exam-button{margin-top:16px}
 .media-source{position:fixed;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
 @media(max-width:760px){.participant-stage{padding:20px 0}.device-layout{grid-template-columns:1fr}.exam-summary{order:-1}.device-card,.exam-summary,.active-exam-card{padding:15px}}
+.monitoring-setup-card{display:grid;gap:14px}
+.monitoring-checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.monitoring-checklist>div{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px solid #e5eee9;border-radius:9px;background:#f8fbf9}
+.monitoring-checklist span{color:#667d73;font-size:14px}
+.monitoring-checklist b{color:#28724f;font-size:14px}
+.screen-share-info{margin:0;color:#71847b;font-size:13px}
+.external-exam-link{margin:10px 0;color:#60776d;font-size:14px}
+@media(max-width:520px){.monitoring-checklist{grid-template-columns:1fr}}

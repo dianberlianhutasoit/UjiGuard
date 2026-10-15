@@ -27,9 +27,9 @@
       { id: "EXAM-004", name: "Ujian Kompetensi Dasar 2025", type: "Mandiri", description: "Contoh ujian yang telah selesai.", status: "Selesai" },
     ],
     examSessions: [
-      { id: "SESSION-01", examId: "EXAM-001", name: "Sesi 01", date: "2026-10-15", startTime: "09:00", endTime: "10:00", mode: "REMOTE", location: "", status: "Akan Datang" },
-      { id: "SESSION-02", examId: "EXAM-002", name: "Sesi Onsite 01", date: "2026-10-14", startTime: "13:00", endTime: "15:00", mode: "ONSITE", location: "Kampus UjiGuard · Ruang Cendekia", status: "Aktif" },
-      { id: "SESSION-03", examId: "EXAM-003", name: "Sesi 01", date: "2026-10-18", startTime: "09:00", endTime: "11:00", mode: "REMOTE", location: "", status: "Akan Datang" },
+      { id: "SESSION-01", examId: "EXAM-001", name: "Sesi 01", date: "2026-10-16", startTime: "09:00", endTime: "10:00", mode: "REMOTE", location: "", examUrl: "https://example.com/exam/123", status: "Akan Datang" },
+      { id: "SESSION-02", examId: "EXAM-002", name: "Sesi Onsite 01", date: "2026-10-14", startTime: "13:00", endTime: "15:00", mode: "ONSITE", location: "Kampus UjiGuard · Ruang Cendekia", examUrl: "https://example.org/cbt/session-02", status: "Aktif" },
+      { id: "SESSION-03", examId: "EXAM-003", name: "Sesi 01", date: "2026-10-18", startTime: "09:00", endTime: "11:00", mode: "REMOTE", location: "", examUrl: "https://example.net/moodle/quiz/103", status: "Akan Datang" },
       { id: "SESSION-04", examId: "EXAM-004", name: "Sesi Arsip", date: "2026-10-10", startTime: "09:00", endTime: "11:00", mode: "ONSITE", location: "Aula Utama", status: "Selesai" },
     ],
     proctorAssignments: [
@@ -48,7 +48,11 @@
         // Add demo master data to existing prototype data without replacing admin edits.
         ["users", "exams", "examSessions"].forEach((collection) => {
           for (const demoRecord of seed[collection]) {
-            if (!state[collection].some((item) => item.id === demoRecord.id)) state[collection].push(clone(demoRecord));
+            const existing = state[collection].find((item) => item.id === demoRecord.id);
+            if (!existing) state[collection].push(clone(demoRecord));
+            else if (collection === "examSessions") {
+              if (!Object.prototype.hasOwnProperty.call(existing, "examUrl") && demoRecord.examUrl) existing.examUrl = demoRecord.examUrl;
+            }
           }
         });
         for (const demoParticipant of seed.participants) {
@@ -83,6 +87,11 @@
     write(state);
     return saved;
   }
+  function resetDemo() {
+    const state = clone(seed);
+    write(state);
+    return get();
+  }
   function assignProctor(sessionId, proctorId) {
     const state = get();
     if (!state.examSessions.some((item) => item.id === sessionId) || !state.users.some((item) => item.id === proctorId && item.role === "proctor" && item.status === "Aktif")) return null;
@@ -116,5 +125,5 @@
     const date = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "long", year: "numeric" }).format(new Date(startAt));
     return `${date} · ${session.startTime}–${session.endTime} WIB`;
   }
-  window.UjiAdminStore = { KEY, get, write, save, assignProctor, removeAssignment, sessionBounds, formatSessionTime };
+  window.UjiAdminStore = { KEY, get, write, save, resetDemo, assignProctor, removeAssignment, sessionBounds, formatSessionTime };
 })();

@@ -10,6 +10,7 @@ const root = __dirname;
 const port = Number(process.env.PORT || 8000);
 const messages = [];
 const presence = new Map();
+const monitoringEvents = [];
 let sequence = 0;
 const mime = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg" };
 
@@ -30,7 +31,7 @@ const server = http.createServer((req, res) => {
         if (item.state === "station") {
           const source = item.session && typeof item.session === "object" ? item.session : {};
           const session = {};
-          ["participantId", "name", "examId", "sessionId", "cameraStatus", "microphoneStatus", "monitoringStatus", "joinedAt"].forEach((key) => {
+          ["participantId", "name", "examId", "sessionId", "cameraStatus", "microphoneStatus", "screenStatus", "monitoringStatus", "joinedAt"].forEach((key) => {
             if (source[key] != null) session[key] = String(source[key]).slice(0, 120);
           });
           presence.set("A-01", { lastSeen: Date.now(), session });
@@ -45,6 +46,27 @@ const server = http.createServer((req, res) => {
     const item = presence.get("A-01") || null;
     const online = !!item && Date.now() - item.lastSeen < 7000;
     return send(res, 200, { online, lastSeen: item?.lastSeen || null, session: online ? item.session : null });
+  }
+  if (url.pathname === "/monitoring-events" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; if (body.length > 4096) req.destroy(); });
+    req.on("end", () => {
+      try {
+        const item = JSON.parse(body);
+        const allowedTypes = ["MONITORING_STARTED", "SCREEN_STARTED", "SCREEN_STOPPED", "PAGE_VISIBILITY_CHANGED", "CONNECTION_LOST", "CONNECTION_RESTORED", "CAMERA_OFF", "CAMERA_ON", "MIC_OFF", "MIC_ON"];
+        if (!/^PST-\d{3}$/.test(String(item.participantId || "")) || !/^SESSION-\d{2}$/.test(String(item.sessionId || "")) || !allowedTypes.includes(item.type)) return send(res, 400, { error: "Invalid monitoring event" });
+        monitoringEvents.push({ id: `REMOTE-${++sequence}`, originEventId: String(item.originEventId || "").slice(0, 80), participantId: String(item.participantId), sessionId: String(item.sessionId), timestamp: new Date().toISOString(), type: item.type, severity: item.severity === "warning" ? "warning" : "info", source: "Browser / Monitoring", title: String(item.title || "Aktivitas monitoring").slice(0, 120), description: String(item.description || "").slice(0, 300), isSimulation: false, reviewStatus: "PENDING" });
+        while (monitoringEvents.length > 500) monitoringEvents.shift();
+        send(res, 202, { ok: true });
+      } catch (_) { send(res, 400, { error: "Invalid JSON" }); }
+    });
+    return;
+  }
+  if (url.pathname === "/monitoring-events" && req.method === "GET") {
+    const cursor = Number(url.searchParams.get("since")) || 0;
+    const events = monitoringEvents.filter((item) => Number(item.id.slice(7)) > cursor);
+    const next = events.length ? Number(events[events.length - 1].id.slice(7)) : cursor;
+    return send(res, 200, { events, cursor: next });
   }
   if (url.pathname === "/signal" && req.method === "POST") {
     let body = "";

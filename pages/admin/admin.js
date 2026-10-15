@@ -55,8 +55,8 @@
   }
 
   function renderSessions(state) {
-    const rows = state.examSessions.map((session) => `<tr><td><strong>${esc(session.id)}</strong></td><td>${esc(examName(state, session.examId))}</td><td>${esc(session.name)}</td><td>${esc(session.date)}<br><small>${esc(session.startTime)}–${esc(session.endTime)} WIB</small></td><td>${session.mode === "ONSITE" ? "Luring" : "Daring"}${session.mode === "ONSITE" && session.location ? `<br><small>${esc(session.location)}</small>` : ""}</td><td>${statusTag(session.status)}</td><td>${actions("session", session.id)}</td></tr>`);
-    content.innerHTML = `${pageHead("Kelola Sesi Ujian", "Waktu mulai dan selesai pada sesi ini menjadi acuan flow peserta.", `<button class="btn btn-primary btn-sm" data-action="add" data-entity="session">+ Tambah Sesi</button>`)}${panel("Daftar sesi", `${state.examSessions.length} sesi`, table(["ID sesi", "Ujian", "Nama sesi", "Jadwal", "Mode / lokasi", "Status", ""], rows, "Belum ada sesi ujian."))}`;
+    const rows = state.examSessions.map((session) => `<tr><td><strong>${esc(session.id)}</strong></td><td>${esc(examName(state, session.examId))}</td><td>${esc(session.name)}</td><td>${esc(session.date)}<br><small>${esc(session.startTime)}–${esc(session.endTime)} WIB</small></td><td>${session.mode === "ONSITE" ? "Luring" : "Daring"}${session.mode === "ONSITE" && session.location ? `<br><small>${esc(session.location)}</small>` : ""}</td><td>${session.examUrl ? `<a href="${esc(session.examUrl)}" target="_blank" rel="noopener noreferrer">${esc(session.examUrl)}</a>` : "—"}</td><td>${statusTag(session.status)}</td><td>${actions("session", session.id)}</td></tr>`);
+    content.innerHTML = `${pageHead("Kelola Sesi Ujian", "Waktu sesi menjadi acuan flow peserta. Ujian dikerjakan pada platform eksternal.", `<button class="btn btn-primary btn-sm" data-action="add" data-entity="session">+ Tambah Sesi</button>`)}${panel("Daftar sesi", `${state.examSessions.length} sesi`, table(["ID sesi", "Ujian", "Nama sesi", "Jadwal", "Mode / lokasi", "Link Ujian", "Status", ""], rows, "Belum ada sesi ujian."))}`;
   }
 
   function renderParticipants(state) {
@@ -135,6 +135,7 @@
       fields.push(inputField("endTime", "Waktu selesai", record?.endTime || "10:00", "time"));
       fields.push(selectField("mode", "Mode", `<option value="REMOTE" ${(record?.mode || "REMOTE") === "REMOTE" ? "selected" : ""}>Daring</option><option value="ONSITE" ${record?.mode === "ONSITE" ? "selected" : ""}>Luring</option>`, record?.mode));
       fields.push(inputField("location", "Lokasi (untuk Luring)", record?.location || "", "text", "conditional-field full", false));
+      fields.push(`<div class="admin-field full"><label for="field-examUrl">Link Ujian</label><input id="field-examUrl" name="examUrl" type="url" value="${esc(record?.examUrl || "")}" placeholder="https://elearning.example.ac.id/exam/123"><small>Alamat platform ujian yang akan dibuka peserta saat sesi dimulai.</small></div>`);
       fields.push(selectField("status", "Status", ["Akan Datang", "Aktif", "Selesai"].map((value) => `<option ${value === (record?.status || "Akan Datang") ? "selected" : ""}>${value}</option>`).join(""), record?.status));
     } else if (entity === "participant") {
       fields.push(inputField("name", "Nama peserta", record?.name || ""));
@@ -176,7 +177,7 @@
       if (proctor) { UjiAdminStore.save("users", { ...proctor, status: proctor.status === "Aktif" ? "Nonaktif" : "Aktif" }); render(); }
     }
     if (action === "remove-assignment") { UjiAdminStore.removeAssignment(button.dataset.sessionId, button.dataset.proctorId); render(); }
-    if (action === "reset-demo") { window.UjiStore.resetDemo(); render(); window.UjiStore.toast("Data demo dimuat ulang."); }
+    if (action === "reset-demo") { UjiAdminStore.resetDemo(); window.UjiStore.resetDemo(); render(); window.UjiStore.toast("Data demo dimuat ulang."); }
   });
   content.addEventListener("click", (event) => {
     const nav = event.target.closest("[data-view]");
@@ -193,6 +194,12 @@
     if (entity === "session" && record.mode === "REMOTE") record.location = "";
     if (entity === "proctor" && id && !record.password) delete record.password;
     if (entity === "session") {
+      if (record.examUrl) {
+        try { const url = new URL(record.examUrl); if (!["http:", "https:"].includes(url.protocol)) throw new Error("protocol"); record.examUrl = url.href; }
+        catch (_) { window.UjiStore.toast("Link Ujian harus menggunakan alamat HTTP atau HTTPS yang valid."); return; }
+      } else if (record.mode === "REMOTE") {
+        window.UjiStore.toast("Isi Link Ujian untuk sesi Daring."); return;
+      }
       const startAt = UjiAdminStore.sessionBounds({ date: record.date, startTime: record.startTime, endTime: record.startTime }).startAt;
       const endAt = UjiAdminStore.sessionBounds({ date: record.date, startTime: record.endTime, endTime: record.endTime }).startAt;
       if (!Number.isFinite(startAt) || !Number.isFinite(endAt) || endAt <= startAt) {

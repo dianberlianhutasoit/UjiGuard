@@ -16,6 +16,8 @@
       { id: "EV-DEMO-PST-002", time: now - 180000, sessionId: "UG-2402", examSessionId: "SESSION-01", participantId: "PST-002", student: "Rafi Pratama", participantNo: "26-002", desk: "A-02", type: "visual", title: "Wajah tidak terdeteksi selama 8 detik", detail: "Skenario simulasi untuk memeriksa alur verifikasi pengawas.", source: "Visual / Simulasi", label: "Data Simulasi", isSimulation: true, status: "new", priority: "high" },
       { id: "EV-DEMO-PST-003", time: now - 120000, sessionId: "UG-2403", examSessionId: "SESSION-01", participantId: "PST-003", student: "Dewi Anggraini", participantNo: "26-003", desk: "A-03", type: "device", title: "Kamera peserta tidak aktif", detail: "Skenario simulasi gangguan kamera; bukan status kamera nyata.", source: "Perangkat / Kamera", label: "Data Simulasi", isSimulation: true, status: "new", priority: "high" },
       { id: "EV-DEMO-PST-004", time: now - 60000, sessionId: "UG-2404", examSessionId: "SESSION-01", participantId: "PST-004", student: "Bima Saputra", participantNo: "26-004", desk: "A-04", type: "visual", title: "Wajah beberapa kali keluar frame", detail: "Skenario simulasi untuk memeriksa alur verifikasi pengawas.", source: "Visual / Simulasi", label: "Data Simulasi", isSimulation: true, status: "new", priority: "medium" },
+      { id: "EV-DEMO-PST-005", time: now - 30000, sessionId: "UG-2405", examSessionId: "SESSION-01", participantId: "PST-005", student: "Salsa Maharani", participantNo: "26-005", desk: "A-05", type: "SCREEN_STOPPED", title: "Berbagi layar dihentikan", detail: "Skenario simulasi untuk menunjukkan indikasi berbagi layar berhenti.", description: "Skenario demonstrasi; bukan event perangkat nyata.", source: "Browser / Simulasi", label: "Data Simulasi", isSimulation: true, status: "new", severity: "warning", reviewStatus: "PENDING", priority: "high" },
+      { id: "EV-DEMO-PST-005-CONNECTION", time: now - 90000, sessionId: "UG-2405", examSessionId: "SESSION-01", participantId: "PST-005", student: "Salsa Maharani", participantNo: "26-005", desk: "A-05", type: "CONNECTION_LOST", title: "Koneksi monitoring tidak stabil", detail: "Skenario simulasi gangguan koneksi yang berdekatan dengan event screen sharing.", description: "Skenario demonstrasi; bukan gangguan jaringan nyata.", source: "Koneksi / Simulasi", label: "Data Simulasi", isSimulation: true, status: "new", severity: "warning", reviewStatus: "PENDING", priority: "high" },
     ];
   }
   function jakartaTimeToday(hour, minute) {
@@ -57,7 +59,7 @@
       { participantId: "PST-002", name: "Rafi Pratama", examId: "EXAM-001", sessionId: "SESSION-01", cameraStatus: "Aktif", microphoneStatus: "Aktif", monitoringStatus: "Monitoring Aktif", joinedAt: joinedAt(17, 31), simulation: true },
       { participantId: "PST-003", name: "Dewi Anggraini", examId: "EXAM-001", sessionId: "SESSION-01", cameraStatus: "Tidak Aktif", microphoneStatus: "Aktif", monitoringStatus: "Monitoring Aktif", joinedAt: joinedAt(17, 30), simulation: true },
       { participantId: "PST-004", name: "Bima Saputra", examId: "EXAM-001", sessionId: "SESSION-01", cameraStatus: "Aktif", microphoneStatus: "Aktif", monitoringStatus: "Monitoring Aktif", joinedAt: joinedAt(17, 32), simulation: true },
-      { participantId: "PST-005", name: "Salsa Maharani", examId: "EXAM-001", sessionId: "SESSION-01", cameraStatus: "Aktif", cameraConnectionStatus: "Tidak Stabil", microphoneStatus: "Aktif", monitoringStatus: "Monitoring Aktif", joinedAt: joinedAt(17, 29), simulation: true },
+      { participantId: "PST-005", name: "Salsa Maharani", examId: "EXAM-001", sessionId: "SESSION-01", cameraStatus: "Aktif", cameraConnectionStatus: "Tidak Stabil", microphoneStatus: "Aktif", screenStatus: "Berhenti · Data Simulasi", monitoringStatus: "Monitoring Aktif", joinedAt: joinedAt(17, 29), simulation: true },
       { participantId: "PST-006", name: "Farhan Akbar", examId: "EXAM-001", sessionId: "SESSION-01", cameraStatus: "Aktif", microphoneStatus: "Bermasalah", monitoringStatus: "Monitoring Aktif", joinedAt: joinedAt(17, 30), simulation: true },
     ];
   }
@@ -125,6 +127,11 @@
     x.monitoring = x.monitoring || { active: false, startedAt: null };
     if (x.monitoring.active && !x.sessions.some(cameraConnected)) x.monitoring = { active: false, startedAt: null };
     for (const event of x.events) {
+      event.timestamp = event.timestamp || new Date(Number(event.time) || Date.now()).toISOString();
+      event.description = event.description || event.detail || "";
+      event.severity = event.severity || (event.status !== "resolved" && (event.priority === "high" || event.status === "new") ? "warning" : "info");
+      event.reviewStatus = event.reviewStatus || (event.status === "resolved" ? "REVIEWED" : "PENDING");
+      event.isSimulation = !!event.isSimulation;
       const station = x.sessions.find((s) => s.id === event.sessionId || s.desk === event.desk);
       if (station && event.sessionId !== station.id) event.sessionId = station.id;
     }
@@ -158,10 +165,18 @@
     const x = get(); const n = (x.lastEvent || 1048) + 1; x.lastEvent = n;
     const now = Date.now();
     const recentIndicators = x.events.filter((event) => event.sessionId === data.sessionId && now - event.time <= 5 * 60 * 1000).length + 1;
-    const ev = { id: "EV-" + n, time: now, status: "new", priority: "medium", repeatCount: recentIndicators, repeatWindowMinutes: 5, ...data };
+    const ev = { id: "EV-" + n, time: now, timestamp: new Date(now).toISOString(), status: "new", priority: "medium", severity: "warning", reviewStatus: "PENDING", repeatCount: recentIndicators, repeatWindowMinutes: 5, ...data };
     x.events.unshift(ev);
     if (ev.participantId && ev.examSessionId) x.activityLogs.unshift({ id: `ACT-${ev.id}`, eventId: ev.id, participantId: ev.participantId, sessionId: ev.examSessionId, title: ev.title, type: ev.type || "indicator", source: ev.isSimulation ? "Data Simulasi" : ev.source || "Tidak diketahui", time: ev.time, status: ev.status, isSimulation: !!ev.isSimulation });
     write(x); return ev;
+  }
+  function ingestMonitoringEvent(data) {
+    if (!data?.id || get().events.some((event) => event.id === data.id || (data.originEventId && event.id === data.originEventId))) return null;
+    const station = get().sessions.find((item) => item.participantNo === String(data.participantId).replace("PST-", "26-") || item.name === data.student);
+    const event = { ...data, time: Date.parse(data.timestamp) || Date.now(), sessionId: station?.id || data.participantId, examSessionId: data.sessionId, student: data.student || data.participantName || data.participantId, participantNo: data.participantNo || "", desk: station?.desk || "A-01", detail: data.description || "", label: data.source, status: data.severity === "warning" ? "new" : "info", priority: data.severity === "warning" ? "high" : "low", isSimulation: false };
+    const x = get(); x.events.unshift(event);
+    x.activityLogs.unshift({ id: `ACT-${event.id}`, eventId: event.id, participantId: event.participantId, sessionId: event.examSessionId, title: event.title, type: event.type, source: event.source, time: event.time, status: event.status, isSimulation: false });
+    write(x); return event;
   }
   function runDemoScenario() {
     return addEvent({ sessionId: "UG-2403", examSessionId: "SESSION-01", participantId: "PST-003", student: "Dewi Anggraini", participantNo: "26-003", desk: "A-03", type: "visual", title: "Wajah tidak terdeteksi selama 6 detik", detail: "Skenario demo untuk memperlihatkan alur tinjauan. Ini data simulasi, bukan hasil deteksi kamera atau AI.", source: "Visual / Simulasi", label: "Data Simulasi", isSimulation: true, priority: "medium" });
@@ -181,7 +196,7 @@
     if (!event) return null;
     const fromStatus = event.status;
     const time = Date.now();
-    Object.assign(event, { status, note, reviewedBy: reviewer, updatedAt: time });
+    Object.assign(event, { status, note, reviewedBy: reviewer, updatedAt: time, reviewStatus: status === "resolved" ? "REVIEWED" : status.toUpperCase() });
     x.reviewHistory.unshift({ id: `RV-${time}-${id}`, eventId: id, participantId: event.participantId || null, sessionId: event.examSessionId || null, action, fromStatus, toStatus: status, reviewer, note, time });
     x.activityLogs.filter((item) => item.eventId === id || item.id === id).forEach((item) => { item.status = status; });
     write(x);
@@ -236,5 +251,5 @@
   function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]); }
   function toast(msg) { let el = document.querySelector(".toast"); if (!el) { el = document.createElement("div"); el.className = "toast"; document.body.appendChild(el); } el.textContent = msg; el.classList.remove("hide"); clearTimeout(window.__ugToast); window.__ugToast = setTimeout(() => el.classList.add("hide"), 2800); }
   function requireRole(role) { const u = currentUser(); if (!u || u.role !== role) { location.replace("../../pages/login/index.html"); return null; } return u; }
-  window.UjiStore = { KEY, get, addEvent, runDemoScenario, resetDemo, updateEvent, reviewEvent, addViolation, upsertSession, updateSession, setMonitoring, saveParticipantSession, getParticipantSession, updateParticipantSession, currentUser, setUser, logout, fmt, fmtLong, ago, esc, toast, requireRole, cameraConnected };
+  window.UjiStore = { KEY, get, addEvent, ingestMonitoringEvent, runDemoScenario, resetDemo, updateEvent, reviewEvent, addViolation, upsertSession, updateSession, setMonitoring, saveParticipantSession, getParticipantSession, updateParticipantSession, currentUser, setUser, logout, fmt, fmtLong, ago, esc, toast, requireRole, cameraConnected };
 })();

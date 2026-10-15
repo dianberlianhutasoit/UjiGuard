@@ -9,11 +9,18 @@
   let selectedSessionId = null;
   let selectedParticipantId = null;
   let rtc = null;
+  let rtcParticipantId = null;
   let rtcStatus = "closed";
+  let rtcStreams = { camera: null, screen: null };
+  let screenStreamEnded = false;
+  let activeEvidence = "screen";
   let remotePresence = null;
   let presenceTimer = null;
+  let monitoringEventTimer = null;
+  let monitoringEventCursor = 0;
   let violationParticipantId = null;
   const video = $("proctor-video");
+  const screenVideo = $("proctor-screen-video");
 
   $("proctor-name").textContent = user.name;
   $("proctor-id").textContent = user.id;
@@ -37,13 +44,16 @@
     const events = store()?.events;
     return (Array.isArray(events) ? events : []).filter((event) => eventMatches(event, participant) && (!event.examSessionId || event.examSessionId === participant.sessionId)).sort((a, b) => Number(b.time) - Number(a.time));
   }
+  function needsReview(event) {
+    return event.status !== "resolved" && (event.status === "new" || event.status === "review" || event.status === "onsite" || event.severity === "warning" || event.priority === "high");
+  }
   function reviewHistoryFor(participant) {
     const reviews = store()?.reviewHistory;
     return (Array.isArray(reviews) ? reviews : []).filter((review) => review.participantId === participant.id && (!review.sessionId || review.sessionId === participant.sessionId)).sort((a, b) => Number(b.time) - Number(a.time));
   }
   function attentionFor(participant) {
     const events = indicatorsFor(participant);
-    return events.some((event) => event.status !== "resolved") ? "Ada Indikasi" : "Normal";
+    return events.some(needsReview) ? "Ada Indikasi" : "Normal";
   }
   function runtimeFor(participant) {
     const runtimes = store()?.participantSessions;
@@ -154,10 +164,11 @@
       const latest = events.find((event) => event.status !== "resolved") || events[0];
       const camera = cameraStatus(participant, runtime);
       const microphone = microphoneStatus(participant, runtime);
+      const screen = runtime?.screenStatus === "Layar penuh aktif" ? "Layar Aktif" : /Dihentikan|Berhenti/.test(runtime?.screenStatus || "") ? "Berhenti" : (runtime ? "Belum Aktif" : "Belum Aktif");
       const monitoring = monitoringStatus(participant, runtime);
       const connected = isActive(runtime);
       const source = latest ? latest.isSimulation ? "Data Simulasi" : latest.source || latest.label || latest.type : "-";
-      return `<button class="participant-card ${selectedParticipantId === participant.id ? "is-selected" : ""}" data-select-participant="${esc(participant.id)}"><div class="participant-card-head"><div><strong>${esc(participant.name)}</strong><small>${esc(participant.id)}${participant.participantNo ? ` – ${esc(participant.participantNo)}` : ""}${participant.demoData ? " – Data Simulasi" : ""}</small></div><span class="attention-pill ${attentionClass(attention)}">${esc(attention)}</span></div><div class="participant-card-status"><span>Kamera<b>${esc(camera)}</b></span><span>Mikrofon<b>${esc(microphone)}</b></span><span>Monitoring<b>${esc(connected ? "Monitoring Aktif" : monitoring)}</b></span></div><div class="participant-card-status"><span>Status<b>${esc(attention)}</b></span><span>Indikator terakhir<b>${latest ? `${esc(latest.title)} – ${formatTime(latest.time)}` : "Tidak ada"}</b></span>${indicationsOnly ? `<span>Sumber<b>${esc(source)}</b></span>` : `<span>${recent > 1 ? `<b>${recent} indikator dalam 5 menit</b>` : ""}</span>`}</div></button>`;
+      return `<button class="participant-card ${selectedParticipantId === participant.id ? "is-selected" : ""}" data-select-participant="${esc(participant.id)}"><div class="participant-card-head"><div><strong>${esc(participant.name)}</strong><small>${esc(participant.id)}${participant.participantNo ? ` – ${esc(participant.participantNo)}` : ""}${participant.demoData ? " – Data Simulasi" : ""}</small></div><span class="attention-pill ${attentionClass(attention)}">${esc(attention)}</span></div><div class="participant-card-status"><span>Kamera<b>${esc(camera)}</b></span><span>Mikrofon<b>${esc(microphone)}</b></span><span>Layar<b>${esc(screen)}</b></span><span>Monitoring<b>${esc(connected ? "Monitoring Aktif" : monitoring)}</b></span></div><div class="participant-card-status"><span>Status<b>${esc(attention)}</b></span><span>Indikator terakhir<b>${latest ? `${esc(latest.title)} – ${formatTime(latest.time)}` : "Tidak ada"}</b></span>${indicationsOnly ? `<span>Sumber<b>${esc(source)}</b></span>` : `<span>${recent > 1 ? `<b>${recent} indikator dalam 5 menit</b>` : ""}</span>`}</div></button>`;
     }).join("")}</div>`;
   }
   function renderDashboardPriority(rows) {
@@ -193,61 +204,61 @@
     const attention = row.attention || "Normal";
     const recent = Number.isFinite(row.recent) ? row.recent : 0;
     const reviews = reviewHistoryFor(participant);
+    const screenStatus = runtime?.screenStatus === "Layar penuh aktif" ? "Layar Aktif" : /Dihentikan|Berhenti/.test(runtime?.screenStatus || "") ? "Berhenti" : "Belum Aktif";
     const exams = Array.isArray(data.exams) ? data.exams : [];
     const exam = exams.find((item) => item.id === participant.examId);
     const canVideo = participant.id === "PST-001" && !!remotePresence?.online && remotePresence.session?.cameraStatus === "Aktif";
+    const canScreen = participant.id === "PST-001" && !!remotePresence?.online && remotePresence.session?.screenStatus === "Layar penuh aktif" && !screenStreamEnded;
     const simNote = participant.demoData ? `<span class="source-pill simulation">Data Simulasi</span>` : "";
-    const activeEvents = events.filter((event) => event.status !== "resolved");
+    const activeEvents = events.filter(needsReview);
     const latest = activeEvents[0] || events[0];
     const activityLogs = store()?.activityLogs;
     const logs = (Array.isArray(activityLogs) ? activityLogs : []).filter((item) => item.participantId === participant.id && (!item.sessionId || item.sessionId === participant.sessionId));
     const timelineItems = new Map();
-    [...events, ...logs].forEach((item) => timelineItems.set(item.id, item));
-    const timeline = [...timelineItems.values()].sort((a, b) => Number(b.time) - Number(a.time)).slice(0, 8).map((event) => `<div class="indicator-item"><div><strong>${esc(event.title || "Aktivitas peserta")}</strong><small>${esc(event.source || event.label || (event.type === "visual" ? "Visual" : event.type === "audio" ? "Audio" : "Aktivitas"))}${event.isSimulation ? " – Data Simulasi" : ""}</small></div><time>${formatTime(event.time)}</time></div>`).join("");
+    logs.forEach((item) => timelineItems.set(item.eventId || item.id, item));
+    events.forEach((item) => timelineItems.set(item.id, item));
+    const timeline = [...timelineItems.values()].sort((a, b) => Number(b.time) - Number(a.time)).slice(0, 8).map((event) => `<div class="indicator-item"><div><strong>${esc(event.title || "Aktivitas peserta")}</strong><small>${esc(event.description || event.source || event.label || (event.type === "visual" ? "Visual" : event.type === "audio" ? "Audio" : "Aktivitas"))}${event.isSimulation ? " – Data Simulasi" : ""}</small></div><time>${formatTime(event.time)}</time></div>`).join("");
+    const warningEvents = events.filter(needsReview).sort((a, b) => Number(a.time) - Number(b.time));
+    const bundle = warningEvents.length >= 2 && warningEvents[warningEvents.length - 1].time - warningEvents[0].time <= 120000 ? `<div class="incident-bundle"><strong>${warningEvents.length} indikator dalam 2 menit${warningEvents.some((event) => event.isSimulation) ? " · Data Simulasi" : ""}</strong><small>Beberapa indikator muncul berdekatan dan dapat ditinjau bersama. Bundle bukan bukti pelanggaran.</small></div>` : "";
     const reviewTimeline = reviews.slice(0, 6).map((review) => `<div class="review-item"><div><strong>${esc(review.action)}</strong><small>${esc(review.reviewer)}${review.note ? ` – ${esc(review.note)}` : ""}</small></div><time>${formatTime(review.time)}</time></div>`).join("");
     const activeIndicatorMarkup = activeEvents.map((event) => `<div class="indicator-item"><div><strong>${esc(event.title)}</strong><small>${fullTime(event.time)} – ${esc(event.source || event.label || event.type)} – ${event.isSimulation ? "Data Simulasi" : "Event nyata"}</small><small>${esc(event.detail || "")}</small></div></div>`).join("");
-    let cameraActions = "";
-    if (participant.demoData) cameraActions = `<button class="btn btn-light" disabled>Data Simulasi - live camera tidak tersedia</button>`;
-    else if (participant.id !== "PST-001") cameraActions = `<button class="btn btn-light" disabled>Live camera prototype hanya tersedia untuk Station Demo A-01</button>`;
-    else if (!canVideo) cameraActions = `<button class="btn btn-light" disabled>Kamera peserta belum terhubung</button>`;
-    else cameraActions = `<button class="btn btn-primary" id="toggle-camera">${rtc ? "Tutup Kamera" : "Lihat Kamera"}</button>`;
     const attentionActions = attention === "Ada Indikasi"
       ? `<button class="btn btn-primary" data-review-action="safe">Tandai Aman</button><button class="btn btn-danger" data-review-action="violation">Catat Pelanggaran</button>` : "";
-    const isLive = rtcStatus === "live" && canVideo;
+    const cameraIsLive = rtcStatus === "live" && !!rtcStreams.camera && canVideo;
+    const screenIsLive = rtcStatus === "live" && !!rtcStreams.screen && canScreen;
+    const screenContent = screenIsLive ? `<video id="detail-screen-video" autoplay playsinline></video><span class="video-label">LIVE · LAYAR</span>` : participant.demoData ? `<div class="video-placeholder simulated-evidence"><span class="source-pill simulation">Data Simulasi</span><strong>Pratinjau layar simulasi</strong><small>Tidak menampilkan layar peserta secara live.</small></div>` : `<div class="video-placeholder" id="screen-message"><strong>${canScreen ? "Menghubungkan layar peserta" : "Layar peserta belum tersedia."}</strong><small>Layar live muncul saat sesi monitoring peserta terhubung.</small></div>`;
+    const evidenceTabs = `<div class="evidence-tabs" role="tablist" aria-label="Pilih evidence peserta"><button type="button" role="tab" aria-selected="${activeEvidence === "screen"}" data-evidence-tab="screen" class="${activeEvidence === "screen" ? "is-active" : ""}">Layar Peserta</button><button type="button" role="tab" aria-selected="${activeEvidence === "camera"}" data-evidence-tab="camera" class="${activeEvidence === "camera" ? "is-active" : ""}">Kamera Peserta</button></div>`;
     panel.innerHTML = `<div class="detail-title"><div><div class="eyebrow">DETAIL PESERTA – ${esc(participant.id)}</div><h2>${esc(participant.name)}</h2><p>${esc(participant.participantNo || "ID peserta")}</p></div><div class="detail-tags"><span class="attention-pill ${attentionClass(attention)}">${esc(attention)}</span>${simNote}</div></div>
       <div class="detail-facts"><div><span>Ujian</span><strong>${esc(exam?.name || participant.examId)}</strong></div><div><span>Sesi</span><strong>${esc(session?.name || participant.sessionId)}</strong></div><div><span>Mode</span><strong>${session?.mode === "ONSITE" ? "Luring" : "Daring"}</strong></div><div><span>Status pendaftaran</span><strong>${esc(participant.status || "Terdaftar")}</strong></div></div>
-      <section class="detail-section"><h3>Status perangkat & sesi</h3><div class="detail-facts"><div><span>Kamera</span><strong>${esc(cameraStatus(participant, runtime))}</strong></div><div><span>Mikrofon</span><strong>${esc(microphoneStatus(participant, runtime))}</strong></div><div><span>Monitoring</span><strong>${esc(monitoringStatus(participant, runtime))}</strong></div><div><span>Koneksi / sesi</span><strong>${esc(runtime?._remote ? "Terhubung via signaling" : runtime ? runtime.monitoringStatus : "Belum Terhubung")}</strong></div></div><small class="detail-note">Mikrofon hanya diperiksa statusnya. Audio tidak dikirim atau dianalisis.</small></section>
+      <section class="detail-section"><h3>Status perangkat & sesi</h3><div class="detail-facts"><div><span>Kamera</span><strong>${esc(cameraStatus(participant, runtime))}</strong></div><div><span>Mikrofon</span><strong>${esc(microphoneStatus(participant, runtime))}</strong></div><div><span>Berbagi layar</span><strong>${esc(screenStatus)}</strong></div><div><span>Monitoring</span><strong>${esc(monitoringStatus(participant, runtime))}</strong></div><div><span>Koneksi / sesi</span><strong>${esc(runtime?._remote ? "Terhubung via signaling" : runtime ? runtime.monitoringStatus : "Belum Terhubung")}</strong></div></div><small class="detail-note">Mikrofon hanya diperiksa statusnya. Audio tidak dikirim atau dianalisis.</small></section>
       <section class="detail-section"><h3>Indikator aktif <small>${activeEvents.length ? `${activeEvents.length} aktif` : ""}</small></h3>${activeIndicatorMarkup || `<div class="empty-state">Tidak ada indikasi aktif.</div>`}</section>
       <section class="detail-section"><h3>Indikator terakhir <small>${recent > 1 ? `${recent} indikator dalam 5 menit` : ""}</small></h3>${latest ? `<div class="indicator-item"><div><strong>${esc(latest.title)}</strong><small>${esc(latest.source || latest.label || latest.type)}${latest.isSimulation ? " – Data Simulasi" : " – Event nyata"}</small><small>${esc(latest.detail || "")}</small></div><time>${fullTime(latest.time)}</time></div>` : `<div class="empty-state">Belum ada indikator.</div>`}</section>
-      <section class="detail-section"><h3>Riwayat indikator</h3>${timeline || `<div class="empty-state">Riwayat indikator kosong.</div>`}</section>
+      <section class="detail-section"><h3>Timeline aktivitas</h3>${bundle}${timeline || `<div class="empty-state">Riwayat indikator kosong.</div>`}</section>
       <section class="detail-section"><h3>Riwayat review</h3>${reviewTimeline || `<div class="empty-state">Belum ada riwayat review.</div>`}</section>
-      <section class="detail-section"><h3>Kamera peserta</h3><div class="video-frame">${cameraPreview(participant, activeEvents, isLive, canVideo, runtime)}</div><div class="detail-actions">${cameraActions}</div></section>
+      <section class="detail-section"><h3>Evidence monitoring</h3>${evidenceTabs}<div class="evidence-pane ${activeEvidence === "screen" ? "" : "hide"}" data-evidence-view="screen"><div class="video-frame evidence-frame">${screenContent}</div></div><div class="evidence-pane ${activeEvidence === "camera" ? "" : "hide"}" data-evidence-view="camera"><div class="video-frame">${cameraPreview(participant, activeEvents, cameraIsLive, canVideo, runtime)}</div></div></section>
       <section class="detail-section"><h3>Tindakan Pengawas</h3><div class="detail-actions">${attentionActions || `<small>Tidak ada indikasi aktif untuk diproses.</small>`}</div></section>`;
-    if (isLive && video.srcObject) $("detail-video").srcObject = video.srcObject;
-    const toggleCamera = $("toggle-camera");
-    toggleCamera?.addEventListener("click", () => {
-      if (rtc) { rtc.stop(); rtc = null; render(); return; }
+    if (cameraIsLive && $("detail-video")) $("detail-video").srcObject = rtcStreams.camera;
+    if (screenIsLive && $("detail-screen-video")) $("detail-screen-video").srcObject = rtcStreams.screen;
+    if ((canScreen || canVideo) && !rtc) {
       rtcStatus = "connecting";
-      rtc = UjiRtc.startProctor(video, (state, message, stream) => {
+      rtcParticipantId = participant.id;
+      rtc = UjiRtc.startProctor(video, screenVideo, (state, message, streams) => {
         rtcStatus = state;
+        if (streams) rtcStreams = streams;
         const currentRow = participantRows().find((item) => item.participant.id === participant.id);
         if (!currentRow) return;
         if (state === "live") {
-          const frameVideo = $("detail-video");
-          const placeholder = $("camera-message");
-          if (frameVideo && stream) { frameVideo.srcObject = stream; frameVideo.classList.remove("hide"); }
-          placeholder?.remove();
-          const frame = document.querySelector(".video-frame");
-          if (frame && !frame.querySelector(".video-label")) frame.insertAdjacentHTML("beforeend", '<span class="video-label">LIVE</span>');
+          render();
+        } else if (state === "screen-ended") {
+          rtcStreams.screen = null;
+          screenStreamEnded = true;
+          render();
         } else if (state === "error") {
-          const placeholder = $("camera-message");
-          if (placeholder) placeholder.textContent = `Live camera masih prototype: ${message || "koneksi belum tersedia"}`;
-          else window.UjiStore.toast(`Live camera masih prototype: ${message || "koneksi belum tersedia"}`);
+          window.UjiStore.toast(message || "Koneksi monitoring belum tersedia.");
         }
       });
       rtc.connect();
-      render();
-    });
+    }
     panel.querySelectorAll("[data-review-action]").forEach((button) => button.addEventListener("click", () => {
       if (button.dataset.reviewAction === "safe") applyReview(participant);
       if (button.dataset.reviewAction === "violation") openViolationForm(participant);
@@ -262,7 +273,7 @@
     selectedParticipantId = next?.participant.id || null;
   }
   function applyReview(participant) {
-    const targets = indicatorsFor(participant).filter((event) => event.status !== "resolved");
+    const targets = indicatorsFor(participant).filter(needsReview);
     if (!targets.length) { window.UjiStore.toast("Tidak ada indikasi aktif untuk diproses."); return; }
     targets.forEach((event) => UjiStore.reviewEvent(event.id, "resolved", user.name, "Tandai Aman", "Pengawas telah meninjau dan menandai peserta aman."));
     focusNextIndication(participant.id);
@@ -270,7 +281,7 @@
     window.UjiStore.toast("Indikasi ditandai aman. Tidak ada pelanggaran yang dicatat.");
   }
   function openViolationForm(participant) {
-    if (!indicatorsFor(participant).some((event) => event.status !== "resolved")) {
+    if (!indicatorsFor(participant).some(needsReview)) {
       window.UjiStore.toast("Tidak ada indikasi aktif untuk diproses.");
       return;
     }
@@ -281,7 +292,7 @@
   function submitViolation(event) {
     event.preventDefault();
     const participant = admin().participants.find((item) => item.id === violationParticipantId && item.sessionId === selectedSessionId);
-    const targets = participant ? indicatorsFor(participant).filter((item) => item.status !== "resolved") : [];
+    const targets = participant ? indicatorsFor(participant).filter(needsReview) : [];
     if (!participant || !targets.length) {
       $("violation-dialog").close();
       window.UjiStore.toast("Tidak ada indikasi aktif untuk diproses.");
@@ -344,8 +355,8 @@
     document.querySelectorAll(".proctor-nav [data-view]").forEach((button) => button.classList.toggle("is-active", button.dataset.view === activeView));
     const indicationCount = session ? participantRows().filter((row) => row.attention === "Ada Indikasi").length : sessions.reduce((sum, item) => sum + item.participants.filter((participant) => attentionFor(participant) === "Ada Indikasi").length, 0);
     $("nav-review-count").textContent = indicationCount;
-    if (!sessions.length) { $("proctor-view").innerHTML = `<section class="proctor-panel empty-state">Belum ada sesi yang ditugaskan ke akun ${esc(user.id)}. Hubungi admin untuk penugasan sesi.</section>`; return; }
-    if (!session) { $("proctor-view").innerHTML = `<section class="proctor-panel empty-state">Pilih sesi yang ditugaskan kepada Anda untuk melihat monitoring peserta.</section>`; return; }
+    if (!sessions.length) { stopDetailRtc(); $("proctor-view").innerHTML = `<section class="proctor-panel empty-state">Belum ada sesi yang ditugaskan ke akun ${esc(user.id)}. Hubungi admin untuk penugasan sesi.</section>`; return; }
+    if (!session) { stopDetailRtc(); $("proctor-view").innerHTML = `<section class="proctor-panel empty-state">Pilih sesi yang ditugaskan kepada Anda untuk melihat monitoring peserta.</section>`; return; }
     const rows = participantRows();
     const indicationRows = rows.filter((row) => row.attention === "Ada Indikasi");
     if (activeView === "indications" && !indicationRows.some((row) => row.participant.id === selectedParticipantId)) {
@@ -354,6 +365,7 @@
     if (activeView !== "indications" && !rows.some((row) => row.participant.id === selectedParticipantId)) {
       selectedParticipantId = rows[0]?.participant.id || null;
     }
+    if (!(["monitor", "indications"].includes(activeView)) || (rtcParticipantId && rtcParticipantId !== selectedParticipantId)) stopDetailRtc();
     const selected = rows.find((row) => row.participant.id === selectedParticipantId) || null;
     const overview = activeView === "dashboard" || activeView === "monitor" ? renderOverview(session) : renderSessionLine(session);
     if (activeView === "violations") { $("proctor-view").innerHTML = `${overview}${renderViolations()}`; return; }
@@ -398,6 +410,13 @@
     const catalog = document.querySelector(".participant-list");
     if (catalog && catalogScroll !== undefined) catalog.scrollTop = catalogScroll;
   }
+  function stopDetailRtc() {
+    if (rtc) rtc.stop();
+    rtc = null;
+    rtcParticipantId = null;
+    rtcStatus = "closed";
+    rtcStreams = { camera: null, screen: null };
+  }
   function presenceSignature(presence) {
     return JSON.stringify({
       online: !!presence?.online,
@@ -420,14 +439,36 @@
       if (changed) render();
     }).finally(() => { presenceRequestPending = false; });
   }
+  let monitoringEventsPending = false;
+  async function refreshMonitoringEvents() {
+    if (monitoringEventsPending) return;
+    monitoringEventsPending = true;
+    try {
+      const response = await fetch(`/monitoring-events?since=${monitoringEventCursor}`, { cache: "no-store" });
+      if (!response.ok) return;
+      const payload = await response.json();
+      for (const event of payload.events || []) {
+        UjiStore.ingestMonitoringEvent(event);
+        monitoringEventCursor = Math.max(monitoringEventCursor, Number(String(event.id).replace("REMOTE-", "")) || 0);
+      }
+      monitoringEventCursor = Math.max(monitoringEventCursor, Number(payload.cursor) || 0);
+    } catch (_) {} finally { monitoringEventsPending = false; }
+  }
   document.querySelectorAll(".proctor-nav [data-view]").forEach((button) => button.addEventListener("click", () => changeView(button.dataset.view)));
   $("session-picker").addEventListener("click", (event) => {
     const button = event.target.closest("[data-choose-session]");
-    if (button) { selectedSessionId = button.dataset.chooseSession; selectedParticipantId = null; if (rtc) { rtc.stop(); rtc = null; } render(); }
+    if (button) { selectedSessionId = button.dataset.chooseSession; selectedParticipantId = null; screenStreamEnded = false; stopDetailRtc(); render(); }
   });
   $("proctor-view").addEventListener("click", (event) => {
+    const evidenceTab = event.target.closest("[data-evidence-tab]");
+    if (evidenceTab) {
+      activeEvidence = evidenceTab.dataset.evidenceTab;
+      document.querySelectorAll("[data-evidence-tab]").forEach((button) => { const selected = button === evidenceTab; button.classList.toggle("is-active", selected); button.setAttribute("aria-selected", String(selected)); });
+      document.querySelectorAll("[data-evidence-view]").forEach((panel) => panel.classList.toggle("hide", panel.dataset.evidenceView !== activeEvidence));
+      return;
+    }
     const button = event.target.closest("[data-select-participant]");
-    if (button && button.dataset.selectParticipant !== selectedParticipantId) { selectedParticipantId = button.dataset.selectParticipant; if (rtc) { rtc.stop(); rtc = null; rtcStatus = "closed"; } render(); }
+    if (button && button.dataset.selectParticipant !== selectedParticipantId) { selectedParticipantId = button.dataset.selectParticipant; activeEvidence = "screen"; screenStreamEnded = false; stopDetailRtc(); render(); }
   });
   $("proctor-logout").addEventListener("click", () => { if (rtc) rtc.stop(); window.UjiAuth.signOut(); location.href = "../login/index.html"; });
   $("violation-form").addEventListener("submit", submitViolation);
@@ -440,5 +481,7 @@
   render();
   refreshPresence();
   presenceTimer = window.setInterval(refreshPresence, 3500);
-  window.addEventListener("pagehide", () => { window.clearInterval(presenceTimer); if (rtc) rtc.stop(); });
+  refreshMonitoringEvents();
+  monitoringEventTimer = window.setInterval(refreshMonitoringEvents, 2000);
+  window.addEventListener("pagehide", () => { window.clearInterval(presenceTimer); window.clearInterval(monitoringEventTimer); if (rtc) rtc.stop(); });
 })();

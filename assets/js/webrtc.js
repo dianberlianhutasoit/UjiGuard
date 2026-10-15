@@ -25,7 +25,7 @@
     return { ready, post: (type, payload) => send(role, role === "station" ? "proctor" : "station", type, payload), stop: () => { stopped = true; clearInterval(timer); } };
   }
 
-  function startStation(getStream, getPresenceMetadata = () => null) {
+  function startStation(getStream, getPresenceMetadata = () => null, getScreenStream = () => null) {
     let pc = null, pendingCandidates = [];
     const setPresence = (state) => fetch("/presence", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ room: ROOM, state, session: state === "station" ? getPresenceMetadata() : null }) }).catch(() => {});
     let presenceTimer = null;
@@ -40,6 +40,7 @@
       pc?.close();
       pc = new RTCPeerConnection({ iceServers: ICE });
       getStream().getTracks().forEach((track) => pc.addTrack(track, getStream()));
+      getScreenStream()?.getTracks().filter((track) => track.kind === "video" && track.readyState === "live").forEach((track) => pc.addTrack(track, getScreenStream()));
       pc.onicecandidate = ({ candidate }) => { if (candidate) client.post("candidate", { candidate }); };
       pc.onconnectionstatechange = () => { if (["failed", "closed", "disconnected"].includes(pc?.connectionState)) { pc?.close(); pc = null; } };
       await pc.setRemoteDescription(message.payload.description);
@@ -53,12 +54,15 @@
     return () => { if (presenceTimer) clearInterval(presenceTimer); setPresence("offline"); client.stop(); pc?.close(); pc = null; };
   }
 
-  function startProctor(video, onState = () => {}) {
+  function startProctor(video, screenVideo, onState = () => {}) {
     let pc = null, active = false, pendingCandidates = [];
+    let streams = { camera: null, screen: null };
     const close = (notify = true) => {
       active = false; pendingCandidates = [];
       if (pc) { pc.ontrack = null; pc.close(); pc = null; }
       video.srcObject = null;
+      screenVideo.srcObject = null;
+      streams = { camera: null, screen: null };
       onState("closed");
       if (notify) client.post("hangup", {});
     };
@@ -81,13 +85,19 @@
         await client.ready;
         pc = new RTCPeerConnection({ iceServers: ICE });
         pc.addTransceiver("video", { direction: "recvonly" });
+        pc.addTransceiver("video", { direction: "recvonly" });
         pc.ontrack = (event) => {
-          video.srcObject = event.streams[0] || new MediaStream([event.track]);
-          video.play().catch(() => {});
-          onState("live", "", video.srcObject);
+          const index = pc.getTransceivers().findIndex((transceiver) => transceiver.mid === event.transceiver.mid);
+          const kind = index === 1 ? "screen" : "camera";
+          streams[kind] = new MediaStream([event.track]);
+          const target = kind === "screen" ? screenVideo : video;
+          target.srcObject = streams[kind];
+          target.play().catch(() => {});
+          onState("live", "", streams);
+          if (kind === "screen") event.track.addEventListener("ended", () => onState("screen-ended", "Berbagi layar dihentikan", streams), { once: true });
         };
         pc.onicecandidate = ({ candidate }) => { if (candidate && pc) client.post("candidate", { candidate }); };
-        pc.onconnectionstatechange = () => { if (pc && ["failed", "disconnected"].includes(pc.connectionState)) onState("error", "Koneksi kamera terputus."); };
+        pc.onconnectionstatechange = () => { if (pc && ["failed", "disconnected"].includes(pc.connectionState)) onState("error", "Koneksi monitoring terputus."); };
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         await client.post("offer", { description: pc.localDescription });
