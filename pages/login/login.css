@@ -285,9 +285,69 @@
   color: #779594;
 }
 .login-panel {
+  position: relative;
+  overflow: hidden;
   padding: 38px clamp(28px, 5vw, 62px) 22px;
   display: flex;
   flex-direction: column;
+}
+.login-panel > :not(.login-stars) {
+  position: relative;
+  z-index: 1;
+}
+.login-stars {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: #68a9d4;
+}
+.login-star {
+  position: absolute;
+  opacity: 0.22;
+  font-size: 17px;
+  animation: login-star-float 5s ease-in-out infinite;
+}
+.star-a { top: 12%; left: 12%; }
+.star-b { top: 24%; right: 11%; font-size: 22px; animation-delay: -1.4s; }
+.star-c { top: 72%; left: 10%; animation-delay: -2.7s; }
+.star-d { right: 8%; bottom: 13%; animation-delay: -0.8s; }
+.star-e { top: 52%; right: 6%; font-size: 13px; animation-delay: -3.5s; }
+.star-f { top: 8%; right: 32%; font-size: 13px; animation-delay: -2.1s; }
+.star-g { bottom: 8%; left: 34%; font-size: 13px; animation-delay: -3.2s; }
+.star-h { top: 42%; left: 7%; font-size: 14px; animation-delay: -1.1s; }
+.star-i { top: 7%; left: 20%; font-size: 12px; opacity: .15; animation-delay: -1.7s; }
+.star-j { top: 9%; right: 18%; font-size: 17px; opacity: .17; animation-delay: -3.7s; }
+.star-k { top: 34%; left: 5%; font-size: 12px; opacity: .15; animation-delay: -2.2s; }
+.star-l { top: 63%; left: 6%; font-size: 16px; opacity: .17; animation-delay: -4.4s; }
+.star-m { top: 30%; right: 5%; font-size: 13px; opacity: .15; animation-delay: -.9s; }
+.star-n { top: 66%; right: 6%; font-size: 12px; opacity: .16; animation-delay: -2.9s; }
+.star-o { bottom: 5%; left: 17%; font-size: 14px; opacity: .15; animation-delay: -3.3s; }
+.star-p { right: 18%; bottom: 5%; font-size: 17px; opacity: .17; animation-delay: -1.3s; }
+.star-q { top: 17%; left: 28%; font-size: 11px; opacity: .14; animation-delay: -4.8s; }
+.star-r { top: 45%; right: 16%; font-size: 12px; opacity: .14; animation-delay: -2.4s; }
+.star-s { bottom: 21%; left: 8%; font-size: 13px; opacity: .15; animation-delay: -3.9s; }
+.star-t { bottom: 25%; right: 8%; font-size: 15px; opacity: .15; animation-delay: -1.9s; }
+@keyframes login-star-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-star { animation: none; }
+}
+@media (max-width: 880px) {
+  .login-star { opacity: .13; }
+  .star-b { top: 6%; right: 13%; }
+  .star-c { top: auto; bottom: 9%; left: 8%; }
+  .star-e { top: 10%; right: 6%; }
+  .star-h { top: 7%; left: 8%; }
+  .star-k { top: 25%; left: 4%; }
+  .star-l { top: auto; bottom: 24%; left: 5%; }
+  .star-m { top: 28%; right: 4%; }
+  .star-n { top: auto; bottom: 23%; right: 5%; }
+  .star-r { top: 42%; right: 4%; }
+  .star-s { bottom: 11%; left: 29%; }
+  .star-t { bottom: 11%; right: 29%; }
 }
 .login-form-wrap {
   width: min(390px, 100%);
@@ -473,14 +533,29 @@
   .login-wrap {
     border-radius: 0;
     min-height: 100vh;
-    grid-template-columns: 1fr;
+    width: 100vw;
+    max-width: 100vw;
+    grid-template-columns: minmax(0, 1fr);
   }
   .login-story {
     display: none;
   }
   .login-panel {
+    min-width: 0;
     min-height: 100vh;
     padding: 22px 24px;
+  }
+  .login-form-wrap {
+    width: 100%;
+    max-width: 400px;
+    min-width: 0;
+  }
+  .login-form-wrap form,
+  .login-form-wrap .field,
+  .login-form-wrap .field input {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
   .mobile-brand {
     display: flex;
