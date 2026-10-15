@@ -97,7 +97,7 @@
     const data = UjiStore.get();
     const lines = [["ID", "Waktu", "Peserta", "Nomor Peserta", "Meja", "Indikasi", "Sumber", "Status", "Catatan"], ...data.events.map((e) => [e.id, new Date(e.time).toISOString(), e.student, e.participantNo || "", e.desk, e.title, sourceLabel(e), statusText[e.status] || e.status, e.note || ""])];
     const csv = lines.map((row) => row.map((item) => '"' + String(item ?? "").replace(/"/g, '""') + '"').join(",")).join("\r\n");
-    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" })); link.download = "ujiguard-riwayat-demo.csv"; link.click(); URL.revokeObjectURL(link.href);
+    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" })); link.download = "tervia-riwayat-demo.csv"; link.click(); URL.revokeObjectURL(link.href);
   }
   if (current === "dashboard") { wireScenarioButtons(); renderDashboard(); }
   if (current === "sessions") { wireScenarioButtons(); document.getElementById("search-stations").addEventListener("input", renderStations); renderStations(); }

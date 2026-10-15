@@ -1,4 +1,4 @@
-# UjiGuard Prototype
+# Tervia Prototype
 
 Prototype multi-role untuk menyiapkan monitoring ujian eksternal. Tervia bukan penyedia soal atau platform pengerjaan ujian: Admin mengelola sesi dan Link Ujian, lalu peserta membuka platform institusi/LMS/CBT yang sudah digunakan. Tervia mempertahankan halaman monitoring, menyusun event timeline, dan membantu Human Review.
 
@@ -11,8 +11,8 @@ Jalankan server lokal dengan `npm start` bila Node.js tersedia, lalu buka `http:
 | Role | ID | Email | Kata sandi |
 |---|---|---|---|
 | Peserta | `PST-001` | — | — |
-| Pengawas | `PGW-001` | `pengawas@ujiguard.demo` | `demo123` |
-| Admin | `ADM-001` | `admin@ujiguard.demo` | `demo123` |
+| Pengawas | `PGW-001` | `pengawas@tervia.demo` | `demo123` |
+| Admin | `ADM-001` | `admin@tervia.demo` | `demo123` |
 
 ## Struktur data prototype
 

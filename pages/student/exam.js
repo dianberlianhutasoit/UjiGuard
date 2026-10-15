@@ -1,5 +1,5 @@
 (function(){
- const stationDemo=new URLSearchParams(location.search).get("station-demo")==="1"; if(!stationDemo){location.replace("../../pages/login/index.html");return;} const savedUser=UjiStore.currentUser(); const user=savedUser?.role==="proctor"?savedUser:{role:"proctor",name:"Panitia Demo",email:"operator@ujiguard.demo"};
+ const stationDemo=new URLSearchParams(location.search).get("station-demo")==="1"; if(!stationDemo){location.replace("../../pages/login/index.html");return;} const savedUser=UjiStore.currentUser(); const user=savedUser?.role==="proctor"?savedUser:{role:"proctor",name:"Panitia Demo",email:"operator@tervia.demo"};
  const $=id=>document.getElementById(id); let stream=null,timer=null,busy=false,missingSince=null,reported=false,lastHeartbeat=0,stopRtc=null;
  let data=UjiStore.get(),session=data.sessions.find(s=>s.email===user.email)||data.sessions.find(s=>s.desk==="A-01");
  if(!session){session={id:"UG-DEMO-03",name:user.name,email:user.email,desk:"A-01",status:"active",started:Date.now(),device:"Kamera belum aktif"};UjiStore.upsertSession(session)}

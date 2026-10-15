@@ -4,11 +4,11 @@
   const COLLECTIONS = ["users", "participants", "exams", "examSessions", "proctorAssignments"];
   const seed = {
     users: [
-      { id: "PGW-001", role: "proctor", name: "Alya Pratama", email: "pengawas@ujiguard.demo", password: "demo123", status: "Aktif" },
-      { id: "ADM-001", role: "admin", name: "Admin UjiGuard", email: "admin@ujiguard.demo", password: "demo123", status: "Aktif" },
-      { id: "PGW-002", role: "proctor", name: "Surya Mahendra", email: "surya@ujiguard.demo", password: "demo123", status: "Aktif" },
-      { id: "PGW-003", role: "proctor", name: "Nita Kusuma", email: "nita@ujiguard.demo", password: "demo123", status: "Aktif" },
-      { id: "PGW-004", role: "proctor", name: "Arif Santoso", email: "arif@ujiguard.demo", password: "demo123", status: "Nonaktif" },
+      { id: "PGW-001", role: "proctor", name: "Alya Pratama", email: "pengawas@tervia.demo", password: "demo123", status: "Aktif" },
+      { id: "ADM-001", role: "admin", name: "Admin Tervia", email: "admin@tervia.demo", password: "demo123", status: "Aktif" },
+      { id: "PGW-002", role: "proctor", name: "Surya Mahendra", email: "surya@tervia.demo", password: "demo123", status: "Aktif" },
+      { id: "PGW-003", role: "proctor", name: "Nita Kusuma", email: "nita@tervia.demo", password: "demo123", status: "Aktif" },
+      { id: "PGW-004", role: "proctor", name: "Arif Santoso", email: "arif@tervia.demo", password: "demo123", status: "Nonaktif" },
     ],
     participants: [
       { id: "PST-001", participantNo: "26-001", role: "participant", name: "Nadia Putri", examId: "EXAM-001", sessionId: "SESSION-01", status: "Terdaftar" },
@@ -21,14 +21,14 @@
       { id: "PST-008", participantNo: "26-008", role: "participant", name: "Arman Wijaya", examId: "EXAM-003", sessionId: "SESSION-03", status: "Nonaktif", demoData: true },
     ],
     exams: [
-      { id: "EXAM-001", name: "Ujian Kompetensi Dasar", type: "Mandiri", description: "Ujian demo UjiGuard.", status: "Aktif" },
+      { id: "EXAM-001", name: "Ujian Kompetensi Dasar", type: "Mandiri", description: "Ujian demo Tervia.", status: "Aktif" },
       { id: "EXAM-002", name: "Uji Kompetensi Lapangan", type: "Terjadwal", description: "Sesi onsite untuk variasi demo admin.", status: "Aktif" },
       { id: "EXAM-003", name: "Sertifikasi Lanjutan", type: "Terjadwal", description: "Ujian demo yang akan datang.", status: "Draft" },
       { id: "EXAM-004", name: "Ujian Kompetensi Dasar 2025", type: "Mandiri", description: "Contoh ujian yang telah selesai.", status: "Selesai" },
     ],
     examSessions: [
       { id: "SESSION-01", examId: "EXAM-001", name: "Sesi 01", date: "2026-10-16", startTime: "09:00", endTime: "10:00", mode: "REMOTE", location: "", examUrl: "https://example.com/exam/123", status: "Akan Datang" },
-      { id: "SESSION-02", examId: "EXAM-002", name: "Sesi Onsite 01", date: "2026-10-14", startTime: "13:00", endTime: "15:00", mode: "ONSITE", location: "Kampus UjiGuard · Ruang Cendekia", examUrl: "https://example.org/cbt/session-02", status: "Aktif" },
+      { id: "SESSION-02", examId: "EXAM-002", name: "Sesi Onsite 01", date: "2026-10-14", startTime: "13:00", endTime: "15:00", mode: "ONSITE", location: "Ruang Cendekia", examUrl: "https://example.org/cbt/session-02", status: "Aktif" },
       { id: "SESSION-03", examId: "EXAM-003", name: "Sesi 01", date: "2026-10-18", startTime: "09:00", endTime: "11:00", mode: "REMOTE", location: "", examUrl: "https://example.net/moodle/quiz/103", status: "Akan Datang" },
       { id: "SESSION-04", examId: "EXAM-004", name: "Sesi Arsip", date: "2026-10-10", startTime: "09:00", endTime: "11:00", mode: "ONSITE", location: "Aula Utama", status: "Selesai" },
     ],
@@ -38,6 +38,23 @@
     ],
   };
   const clone = (value) => JSON.parse(JSON.stringify(value));
+  // One-time brand migration: exact-match legacy values only, never admin edits.
+  const LEGACY_EMAILS = {
+    "admin@ujiguard.demo": "admin@tervia.demo",
+    "pengawas@ujiguard.demo": "pengawas@tervia.demo",
+    "surya@ujiguard.demo": "surya@tervia.demo",
+    "nita@ujiguard.demo": "nita@tervia.demo",
+    "arif@ujiguard.demo": "arif@tervia.demo",
+    "operator@ujiguard.demo": "operator@tervia.demo",
+  };
+  function migrateLegacyBrand(state) {
+    let changed = false;
+    for (const user of state.users || []) {
+      if (user && LEGACY_EMAILS[user.email]) { user.email = LEGACY_EMAILS[user.email]; changed = true; }
+      if (user && user.id === "ADM-001" && user.name === "Admin UjiGuard") { user.name = "Admin Tervia"; changed = true; }
+    }
+    return changed;
+  }
 
   function get() {
     try {
@@ -60,6 +77,9 @@
         }
         for (const assignment of seed.proctorAssignments) {
           if (!state.proctorAssignments.some((item) => item.sessionId === assignment.sessionId && item.proctorId === assignment.proctorId)) state.proctorAssignments.push(clone(assignment));
+        }
+        if (migrateLegacyBrand(state)) {
+          try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {}
         }
         return state;
       }
