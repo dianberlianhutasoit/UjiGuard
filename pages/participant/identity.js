@@ -9,7 +9,7 @@
   document.getElementById("session-id").textContent = user.sessionId;
   document.getElementById("session-time").textContent = user.sessionTime;
   document.getElementById("session-start").textContent = `${user.startTime || "-"} WIB`;
-  document.getElementById("session-end").textContent = `${user.endTime || "-"} WIB`;
+  document.getElementById("session-end").textContent = `${user.endTime ? UjiAdminStore.formatClock(user.endTime) : "-"} WIB`;
   document.getElementById("exam-mode").textContent = user.mode;
   document.getElementById("confirm-identity").addEventListener("click", () => {
     const signedIn = window.UjiAuth.signIn(user.id);

@@ -183,8 +183,8 @@
   $("active-id").textContent = demo.id;
   $("active-session").textContent = demo.sessionId;
   $("active-time").textContent = demo.sessionTime;
-  $("active-start-time").textContent = `${schedule.startTime} WIB`;
-  $("active-end-time").textContent = `${schedule.endTime} WIB`;
+  $("active-start-time").textContent = `${UjiAdminStore.formatClock(schedule.startTime)} WIB`;
+  $("active-end-time").textContent = `${UjiAdminStore.formatClock(schedule.endTime)} WIB`;
   $("active-mode").textContent = demo.mode;
   if (abandonedSession) {
     $("session-block-message").textContent = "Sesi ini telah ditinggalkan sebelum waktu selesai. Anda tidak dapat masuk kembali ke sesi yang sama.";

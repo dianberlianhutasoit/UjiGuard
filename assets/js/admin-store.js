@@ -126,6 +126,23 @@
     state.proctorAssignments = state.proctorAssignments.filter((item) => !(item.sessionId === sessionId && item.proctorId === proctorId));
     write(state);
   }
+  function formatClock(time) {
+    if (!time) return "";
+    return String(time).replace(/^(\d{1,2}):(\d{2})$/, "$1.$2");
+  }
+  function formatTimeRange(startTime, endTime) {
+    if (!startTime || !endTime) return "Waktu belum tersedia";
+    return `${formatClock(startTime)} - ${formatClock(endTime)} WIB`;
+  }
+  function formatDate(date) {
+    if (!date) return "Tanggal belum tersedia";
+    const parts = date.split("-").map(Number);
+    if (parts.length !== 3 || !parts.every(Number.isFinite)) return date;
+    const [year, month, day] = parts;
+    const parsed = new Date(Date.UTC(year, month - 1, day, 12));
+    if (Number.isNaN(parsed.getTime())) return date;
+    return new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "long", year: "numeric" }).format(parsed);
+  }
   function sessionDateTime(date, time) {
     if (!date || !time) return NaN;
     const [year, month, day] = date.split("-").map(Number);
@@ -139,11 +156,9 @@
   }
   function formatSessionTime(session) {
     if (!session) return "Jadwal sesi belum tersedia";
-    const startAt = sessionDateTime(session.date, session.startTime);
-    const endAt = sessionDateTime(session.date, session.endTime);
-    if (!Number.isFinite(startAt) || !Number.isFinite(endAt)) return "Jadwal sesi belum valid";
-    const date = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "long", year: "numeric" }).format(new Date(startAt));
-    return `${date} · ${session.startTime}–${session.endTime} WIB`;
+    const bounds = sessionBounds(session);
+    if (!Number.isFinite(bounds.startAt) || !Number.isFinite(bounds.endAt)) return "Jadwal sesi belum valid";
+    return `${formatDate(session.date)}, ${formatTimeRange(session.startTime, session.endTime)}`;
   }
-  window.UjiAdminStore = { KEY, get, write, save, resetDemo, assignProctor, removeAssignment, sessionBounds, formatSessionTime };
+  window.UjiAdminStore = { KEY, get, write, save, resetDemo, assignProctor, removeAssignment, sessionBounds, formatDate, formatClock, formatTimeRange, formatSessionTime };
 })();
